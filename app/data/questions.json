@@ -1,0 +1,1346 @@
+[
+ {
+  "id": "cc-01",
+  "domain": "cloud-concepts",
+  "topic": "benefits",
+  "difficulty": 1,
+  "q": "An online shop in Nairobi expects traffic to spike on Black Friday and drop afterwards. It wants capacity to grow and shrink automatically with demand. Which cloud benefit is this?",
+  "options": [
+   "Data sovereignty",
+   "Manageability",
+   "Elasticity",
+   "Predictability"
+  ],
+  "answer": 2,
+  "why": "Elasticity means resources are added or removed automatically as demand changes, so you are not stuck paying for peak capacity all year.",
+  "why_not": [
+   "Data sovereignty is about where data legally lives; it does not adjust capacity.",
+   "Manageability is about how easily resources are deployed and operated, not how they scale.",
+   "",
+   "Predictability is about forecasting cost and performance, not reacting to demand swings."
+  ]
+ },
+ {
+  "id": "cc-02",
+  "domain": "cloud-concepts",
+  "topic": "benefits",
+  "difficulty": 1,
+  "q": "A database server keeps running out of memory, so the team resizes it to a larger VM size with more CPU and RAM. What is this called?",
+  "options": [
+   "Geo-replication",
+   "Horizontal scaling",
+   "Load balancing",
+   "Vertical scaling"
+  ],
+  "answer": 3,
+  "why": "Vertical scaling (scaling up) makes one machine bigger. Horizontal scaling adds more machines.",
+  "why_not": [
+   "Geo-replication copies data to another region; it does not add memory.",
+   "Horizontal scaling adds more instances rather than enlarging one.",
+   "Load balancing spreads traffic across instances; it does not resize a server.",
+   ""
+  ]
+ },
+ {
+  "id": "cc-03",
+  "domain": "cloud-concepts",
+  "topic": "benefits",
+  "difficulty": 2,
+  "q": "A team deploys the same application in two regions so it can keep serving customers even if one entire region has an outage. Which cloud benefit does this design show?",
+  "options": [
+   "Capital expenditure",
+   "Reliability",
+   "Consumption-based pricing",
+   "Elasticity"
+  ],
+  "answer": 1,
+  "why": "Reliability is the ability to recover from failures and keep working, which is what multi-region design provides.",
+  "why_not": [
+   "Capital expenditure is a spending model, not a technical benefit.",
+   "",
+   "Consumption-based pricing is how you are billed, not how resilient the app is.",
+   "Elasticity is about matching capacity to demand, not surviving outages."
+  ]
+ },
+ {
+  "id": "cc-04",
+  "domain": "cloud-concepts",
+  "topic": "benefits",
+  "difficulty": 2,
+  "q": "Which cloud benefit describes managing and deploying resources through templates, automation, the portal, or command-line tools instead of manual hardware work?",
+  "options": [
+   "Depreciation",
+   "Sovereignty",
+   "Manageability",
+   "Latency"
+  ],
+  "answer": 2,
+  "why": "Manageability covers how easily you can deploy, configure, monitor and automate cloud resources.",
+  "why_not": [
+   "Depreciation is an accounting concept for physical assets.",
+   "Sovereignty is about legal control over data location.",
+   "",
+   "Latency is how long data takes to travel; it is a performance measure."
+  ]
+ },
+ {
+  "id": "cc-05",
+  "domain": "cloud-concepts",
+  "topic": "benefits",
+  "difficulty": 1,
+  "q": "A provider's service-level agreement promises the service will be available 99.95% of the time. Which cloud benefit does this primarily describe?",
+  "options": [
+   "Elasticity",
+   "Governance",
+   "High availability",
+   "Cost predictability"
+  ],
+  "answer": 2,
+  "why": "High availability is about keeping a service accessible, and SLAs put a measurable uptime target on it.",
+  "why_not": [
+   "Elasticity concerns scaling with demand.",
+   "Governance concerns rules and compliance, not uptime.",
+   "",
+   "Cost predictability concerns forecasting spend."
+  ]
+ },
+ {
+  "id": "cc-06",
+  "domain": "cloud-concepts",
+  "topic": "benefits",
+  "difficulty": 2,
+  "q": "A finance lead wants to forecast monthly spend and application performance accurately before launching a new service. Which cloud benefit supports this?",
+  "options": [
+   "Geo-redundancy",
+   "Federation",
+   "Fault tolerance",
+   "Predictability"
+  ],
+  "answer": 3,
+  "why": "Predictability is the ability to forecast cost and performance, helped by tools such as cost estimators and autoscaling limits.",
+  "why_not": [
+   "Geo-redundancy copies data across regions for resilience.",
+   "Federation links identity systems together; it is not a forecasting benefit.",
+   "Fault tolerance keeps systems running despite component failure.",
+   ""
+  ]
+ },
+ {
+  "id": "cc-07",
+  "domain": "cloud-concepts",
+  "topic": "economics",
+  "difficulty": 1,
+  "q": "A logistics start-up stops buying servers and instead pays a monthly bill for the compute it uses. What shift in spending is this?",
+  "options": [
+   "From OpEx to CapEx",
+   "From CapEx to OpEx",
+   "From hybrid to private",
+   "From fixed costs to depreciation"
+  ],
+  "answer": 1,
+  "why": "Buying hardware up front is capital expenditure (CapEx). Paying for services as you use them is operational expenditure (OpEx).",
+  "why_not": [
+   "This reverses the direction: cloud moves spending away from CapEx, not towards it.",
+   "",
+   "Hybrid and private are deployment models, not spending models.",
+   "Depreciation applies to owned assets, which the start-up no longer buys."
+  ]
+ },
+ {
+  "id": "cc-08",
+  "domain": "cloud-concepts",
+  "topic": "economics",
+  "difficulty": 1,
+  "q": "In the consumption-based pricing model, what do you pay for?",
+  "options": [
+   "A fixed annual licence regardless of use",
+   "Only the storage you reserve, never compute",
+   "The full hardware purchase price up front",
+   "Only the resources you actually use"
+  ],
+  "answer": 3,
+  "why": "Consumption-based pricing is pay-as-you-go: no upfront cost and you are billed for what you consume.",
+  "why_not": [
+   "A fixed licence is not consumption-based because it ignores usage.",
+   "Compute is billed too; the model is not limited to storage.",
+   "Paying for hardware up front is CapEx, the opposite model.",
+   ""
+  ]
+ },
+ {
+  "id": "cc-09",
+  "domain": "cloud-concepts",
+  "topic": "economics",
+  "difficulty": 2,
+  "q": "Which statement describes capital expenditure (CapEx)?",
+  "options": [
+   "Costs that stop the moment you stop using a service",
+   "Monthly charges that rise and fall with usage",
+   "Upfront spending on physical assets that lose value over time",
+   "Fees paid only to a cloud provider"
+  ],
+  "answer": 2,
+  "why": "CapEx is money spent up front on assets such as servers and datacenter equipment, which are depreciated over time.",
+  "why_not": [
+   "Costs that vanish when usage stops are a feature of consumption-based OpEx.",
+   "Usage-based monthly charges describe OpEx.",
+   "",
+   "CapEx is not about who you pay; it is about buying long-lived assets up front."
+  ]
+ },
+ {
+  "id": "cc-10",
+  "domain": "cloud-concepts",
+  "topic": "service-types",
+  "difficulty": 1,
+  "q": "Which cloud service type gives the customer the most control over the operating system?",
+  "options": [
+   "Software as a Service (SaaS)",
+   "Infrastructure as a Service (IaaS)",
+   "Platform as a Service (PaaS)",
+   "None; the provider always controls the OS"
+  ],
+  "answer": 1,
+  "why": "With IaaS you rent virtual machines and manage the OS, patches and everything above it. PaaS and SaaS hand more of the stack to the provider.",
+  "why_not": [
+   "In SaaS the provider manages nearly everything.",
+   "",
+   "In PaaS the provider manages the OS and runtime.",
+   "In IaaS the customer does control the guest OS."
+  ]
+ },
+ {
+  "id": "cc-11",
+  "domain": "cloud-concepts",
+  "topic": "service-types",
+  "difficulty": 1,
+  "q": "Employees use a browser-based email and calendar service. The provider manages the servers, software and updates, and the company only manages its users and data. Which service type is this?",
+  "options": [
+   "Private cloud",
+   "Infrastructure as a Service (IaaS)",
+   "Platform as a Service (PaaS)",
+   "Software as a Service (SaaS)"
+  ],
+  "answer": 3,
+  "why": "SaaS delivers a complete application over the internet and the provider runs the whole stack.",
+  "why_not": [
+   "Private cloud is a deployment model, not a service type.",
+   "IaaS would require the company to manage the OS and software.",
+   "PaaS is for building and running your own applications.",
+   ""
+  ]
+ },
+ {
+  "id": "cc-12",
+  "domain": "cloud-concepts",
+  "topic": "service-types",
+  "difficulty": 2,
+  "q": "A developer wants to publish a web app without managing servers or operating system patches, while keeping full control of the application code. Which service type fits best?",
+  "options": [
+   "Software as a Service (SaaS)",
+   "On-premises hosting",
+   "Platform as a Service (PaaS)",
+   "Infrastructure as a Service (IaaS)"
+  ],
+  "answer": 2,
+  "why": "PaaS provides a managed platform for your code, so you focus on the app instead of servers and patching.",
+  "why_not": [
+   "SaaS is a finished application; you would not deploy your own code to it.",
+   "On-premises means you manage the hardware and everything above it.",
+   "",
+   "IaaS leaves OS management and patching to you."
+  ]
+ },
+ {
+  "id": "cc-13",
+  "domain": "cloud-concepts",
+  "topic": "shared-responsibility",
+  "difficulty": 2,
+  "q": "Under the shared responsibility model, which of these is always the customer's responsibility, whatever the service type?",
+  "options": [
+   "Patching the host hypervisor",
+   "Maintaining network cabling",
+   "Protecting their data and identities",
+   "Physical datacenter security"
+  ],
+  "answer": 2,
+  "why": "Customers always own their data, accounts and identities, and the devices they use. The provider handles the physical layer.",
+  "why_not": [
+   "Host hypervisor patching is the provider's job.",
+   "Cabling is part of the provider's physical infrastructure.",
+   "",
+   "Physical security always belongs to the provider."
+  ]
+ },
+ {
+  "id": "cc-14",
+  "domain": "cloud-concepts",
+  "topic": "shared-responsibility",
+  "difficulty": 1,
+  "q": "In an IaaS deployment, who is responsible for patching the guest operating system on a virtual machine?",
+  "options": [
+   "Both always share it equally",
+   "The customer",
+   "The internet service provider",
+   "The cloud provider"
+  ],
+  "answer": 1,
+  "why": "In IaaS the customer manages the guest OS, including updates and patches. The provider manages the physical host and datacenter.",
+  "why_not": [
+   "Responsibility is divided by layer, not split equally.",
+   "",
+   "An internet provider has no role in patching your VM.",
+   "The provider only patches the underlying host in IaaS, not your guest OS."
+  ]
+ },
+ {
+  "id": "cc-15",
+  "domain": "cloud-concepts",
+  "topic": "shared-responsibility",
+  "difficulty": 2,
+  "q": "Which responsibility always belongs to the cloud provider, in every service type?",
+  "options": [
+   "Classifying the customer's data",
+   "Configuring user permissions",
+   "Managing the customer's endpoint devices",
+   "Securing the physical datacenters"
+  ],
+  "answer": 3,
+  "why": "Physical hosts, networks and datacenters are always the provider's responsibility.",
+  "why_not": [
+   "Data classification is the customer's responsibility.",
+   "User permissions are managed by the customer.",
+   "Customer devices are always managed by the customer.",
+   ""
+  ]
+ },
+ {
+  "id": "cc-16",
+  "domain": "cloud-concepts",
+  "topic": "cloud-models",
+  "difficulty": 1,
+  "q": "A hospital keeps patient records in its own datacenter but runs analytics in the public cloud, with the two environments connected. Which cloud model is this?",
+  "options": [
+   "Private cloud",
+   "Hybrid cloud",
+   "Community cloud",
+   "Public cloud"
+  ],
+  "answer": 1,
+  "why": "Hybrid cloud combines on-premises or private infrastructure with public cloud services.",
+  "why_not": [
+   "Private cloud alone would not use public cloud analytics.",
+   "",
+   "Community cloud is not one of the models tested here and does not fit this scenario.",
+   "Public cloud alone would not keep records in the hospital's own datacenter."
+  ]
+ },
+ {
+  "id": "cc-17",
+  "domain": "cloud-concepts",
+  "topic": "cloud-models",
+  "difficulty": 1,
+  "q": "Which statement describes a private cloud?",
+  "options": [
+   "Infrastructure used exclusively by a single organization",
+   "A cloud where the provider owns no hardware",
+   "Services shared openly among many unrelated customers over the internet",
+   "Services that run only on mobile devices"
+  ],
+  "answer": 0,
+  "why": "A private cloud is dedicated to one organization, whether hosted on-premises or by a provider.",
+  "why_not": [
+   "",
+   "Some entity always owns the hardware.",
+   "Shared multi-tenant services over the internet describe a public cloud.",
+   "Private cloud has nothing to do with mobile devices."
+  ]
+ },
+ {
+  "id": "cc-18",
+  "domain": "cloud-concepts",
+  "topic": "cloud-models",
+  "difficulty": 2,
+  "q": "A retailer runs its core systems in its own datacenter but rents public cloud capacity only during seasonal peaks. Which statement describes this approach?",
+  "options": [
+   "It is a private cloud because the retailer owns some hardware",
+   "It is a public cloud because rented capacity is involved",
+   "It is a hybrid cloud that uses public cloud capacity to handle overflow",
+   "It is a SaaS deployment because customers use the shop in a browser"
+  ],
+  "answer": 2,
+  "why": "Mixing your own datacenter with public cloud capacity, for example to absorb seasonal peaks, is a hybrid cloud.",
+  "why_not": [
+   "Private cloud alone would not use rented public capacity for peaks.",
+   "Public cloud alone would mean the retailer's core systems are not in its own datacenter.",
+   "",
+   "SaaS describes a service type, and customers using a browser does not define the deployment model."
+  ]
+ },
+ {
+  "id": "cc-19",
+  "domain": "cloud-concepts",
+  "topic": "cloud-models",
+  "difficulty": 1,
+  "q": "What is a main benefit of the public cloud model for a small business?",
+  "options": [
+   "The business must buy and house all of its own servers",
+   "The hardware is dedicated to only that one business",
+   "The business must run its own physical security team",
+   "No upfront hardware purchase, and the provider maintains the datacenter"
+  ],
+  "answer": 3,
+  "why": "In a public cloud the provider owns and maintains the hardware, so small businesses avoid large upfront costs.",
+  "why_not": [
+   "Buying and housing servers is what a private on-premises model requires.",
+   "Dedicated hardware for one organisation describes a private cloud.",
+   "Physical security of the datacenter is the provider's job in public cloud.",
+   ""
+  ]
+ },
+ {
+  "id": "as-01",
+  "domain": "architecture-services",
+  "topic": "core-architecture",
+  "difficulty": 1,
+  "q": "What is an Azure region?",
+  "options": [
+   "A single rack of servers inside a datacenter",
+   "A geographic area containing one or more datacenters connected by a low-latency network",
+   "A virtual network boundary",
+   "A billing account that groups subscriptions"
+  ],
+  "answer": 1,
+  "why": "A region is a set of datacenters deployed within a latency-defined perimeter and connected through a dedicated regional network.",
+  "why_not": [
+   "A rack is much smaller than a region.",
+   "",
+   "Virtual networks are a networking construct inside a region.",
+   "Billing groupings are subscriptions or accounts, not regions."
+  ]
+ },
+ {
+  "id": "as-02",
+  "domain": "architecture-services",
+  "topic": "core-architecture",
+  "difficulty": 2,
+  "q": "A company needs its application to keep running if a single datacenter in a region fails. What should it use?",
+  "options": [
+   "Availability zones",
+   "Tags",
+   "Resource locks",
+   "Management groups"
+  ],
+  "answer": 0,
+  "why": "Availability zones are physically separate locations within a region, each with independent power, cooling and networking.",
+  "why_not": [
+   "",
+   "Tags label resources for organisation and cost tracking.",
+   "Locks stop accidental deletion; they do not provide failover.",
+   "Management groups organise subscriptions."
+  ]
+ },
+ {
+  "id": "as-03",
+  "domain": "architecture-services",
+  "topic": "core-architecture",
+  "difficulty": 3,
+  "q": "Which statement about Azure region pairs is true?",
+  "options": [
+   "Customers create and pay separately for each pairing",
+   "Planned platform updates are rolled out to only one region in a pair at a time",
+   "Paired regions must be on different continents",
+   "All data is copied between paired regions automatically at no cost"
+  ],
+  "answer": 1,
+  "why": "Region pairs support disaster recovery, and planned updates are sequenced so only one region in a pair is updated at a time.",
+  "why_not": [
+   "Pairings are defined by the platform, not purchased by customers.",
+   "",
+   "Pairs are within the same geography, not across continents.",
+   "Replication depends on the service and redundancy option you choose; it is not automatic and free for all data."
+  ]
+ },
+ {
+  "id": "as-04",
+  "domain": "architecture-services",
+  "topic": "core-architecture",
+  "difficulty": 2,
+  "q": "Which option lists the Azure organisational hierarchy from broadest to narrowest?",
+  "options": [
+   "Management group, resource group, subscription, resource",
+   "Subscription, management group, resource, resource group",
+   "Resource group, management group, subscription, resource",
+   "Management group, subscription, resource group, resource"
+  ],
+  "answer": 3,
+  "why": "Management groups contain subscriptions, subscriptions contain resource groups, and resource groups contain resources.",
+  "why_not": [
+   "Subscriptions contain resource groups, so subscription must come before resource group.",
+   "Management groups sit above subscriptions, not below.",
+   "Resource groups sit inside subscriptions, not above management groups.",
+   ""
+  ]
+ },
+ {
+  "id": "as-05",
+  "domain": "architecture-services",
+  "topic": "core-architecture",
+  "difficulty": 2,
+  "q": "How many resource groups can a single Azure resource belong to at one time?",
+  "options": [
+   "Any number",
+   "Exactly one",
+   "Up to three",
+   "None; resource groups only hold subscriptions"
+  ],
+  "answer": 1,
+  "why": "Every resource lives in exactly one resource group, though you can move it to another one.",
+  "why_not": [
+   "Resources cannot be in several resource groups at once.",
+   "",
+   "There is no limit of three.",
+   "Resource groups hold resources, not subscriptions."
+  ]
+ },
+ {
+  "id": "as-06",
+  "domain": "architecture-services",
+  "topic": "compute",
+  "difficulty": 1,
+  "q": "A developer wants to run a small piece of code whenever a file is uploaded, without managing any servers, and pay only when it runs. Which service fits best?",
+  "options": [
+   "Azure Virtual Desktop",
+   "Azure Virtual Machines",
+   "Azure Kubernetes Service",
+   "Azure Functions"
+  ],
+  "answer": 3,
+  "why": "Azure Functions is serverless and event-driven: code runs in response to triggers and you pay for execution.",
+  "why_not": [
+   "Virtual Desktop delivers desktops and apps to users.",
+   "VMs need you to manage the OS and run all the time.",
+   "AKS orchestrates containers and is heavier than this need.",
+   ""
+  ]
+ },
+ {
+  "id": "as-07",
+  "domain": "architecture-services",
+  "topic": "compute",
+  "difficulty": 1,
+  "q": "A company is migrating an older application that needs a specific operating system version and full administrative access. Which compute option fits?",
+  "options": [
+   "Azure Virtual Machines",
+   "Azure Logic Apps",
+   "Azure Functions",
+   "Azure DNS"
+  ],
+  "answer": 0,
+  "why": "Virtual machines give you full control of the OS, which suits lift-and-shift of legacy workloads.",
+  "why_not": [
+   "",
+   "Logic Apps automate workflows; they are not a place to host an app needing OS access.",
+   "Functions abstract away the OS, so you cannot control it.",
+   "DNS resolves names; it does not run applications."
+  ]
+ },
+ {
+  "id": "as-08",
+  "domain": "architecture-services",
+  "topic": "compute",
+  "difficulty": 2,
+  "q": "Which service automatically increases or decreases the number of identical virtual machines based on demand?",
+  "options": [
+   "Azure Files",
+   "Azure Resource Manager",
+   "Availability sets only",
+   "Virtual Machine Scale Sets"
+  ],
+  "answer": 3,
+  "why": "Virtual Machine Scale Sets manage a group of identical VMs and can autoscale them.",
+  "why_not": [
+   "Azure Files provides file shares.",
+   "Resource Manager is the deployment layer, not a scaler of VM counts.",
+   "Availability sets spread VMs across fault domains but do not autoscale.",
+   ""
+  ]
+ },
+ {
+  "id": "as-09",
+  "domain": "architecture-services",
+  "topic": "compute",
+  "difficulty": 2,
+  "q": "A team runs dozens of containerised microservices and needs automated deployment, scaling and management of them. Which service is designed for this?",
+  "options": [
+   "Azure Virtual Desktop",
+   "Azure Container Instances for a single quick container",
+   "Azure Blob Storage",
+   "Azure Kubernetes Service (AKS)"
+  ],
+  "answer": 3,
+  "why": "AKS is a managed Kubernetes service for orchestrating many containers.",
+  "why_not": [
+   "Virtual Desktop delivers Windows desktops.",
+   "Container Instances run individual containers quickly but without full orchestration.",
+   "Blob Storage stores objects, not containers.",
+   ""
+  ]
+ },
+ {
+  "id": "as-10",
+  "domain": "architecture-services",
+  "topic": "compute",
+  "difficulty": 2,
+  "q": "A firm wants staff to use a Windows desktop and apps hosted in the cloud from any device, including personal laptops. Which service provides this?",
+  "options": [
+   "Azure Virtual Desktop",
+   "Azure Functions",
+   "Azure Firewall",
+   "Azure Cosmos DB"
+  ],
+  "answer": 0,
+  "why": "Azure Virtual Desktop delivers virtualised desktops and apps accessible from many devices.",
+  "why_not": [
+   "",
+   "Functions run code, not desktops.",
+   "Firewall filters network traffic.",
+   "Cosmos DB is a database."
+  ]
+ },
+ {
+  "id": "as-11",
+  "domain": "architecture-services",
+  "topic": "networking",
+  "difficulty": 1,
+  "q": "What is the main purpose of an Azure virtual network (VNet)?",
+  "options": [
+   "To let Azure resources communicate securely and privately with each other, the internet and on-premises networks",
+   "To store backups of virtual machines",
+   "To bill customers for bandwidth",
+   "To monitor application performance"
+  ],
+  "answer": 0,
+  "why": "A VNet is your private network in Azure, giving isolation and controlled connectivity.",
+  "why_not": [
+   "",
+   "Backups are handled by backup services, not by VNets.",
+   "Billing is handled by cost management tools.",
+   "Monitoring is done with Azure Monitor and related tools."
+  ]
+ },
+ {
+  "id": "as-12",
+  "domain": "architecture-services",
+  "topic": "networking",
+  "difficulty": 2,
+  "q": "A bank needs a private, dedicated connection from its office to Azure that does not travel over the public internet. Which service provides this?",
+  "options": [
+   "VPN Gateway over a home broadband link",
+   "Azure ExpressRoute",
+   "Azure Traffic Manager",
+   "Azure DNS"
+  ],
+  "answer": 1,
+  "why": "ExpressRoute provides a private connection through a connectivity provider rather than the public internet.",
+  "why_not": [
+   "A VPN gateway connection is encrypted but still travels over the public internet.",
+   "",
+   "Traffic Manager routes users to endpoints using DNS.",
+   "DNS translates names to addresses."
+  ]
+ },
+ {
+  "id": "as-13",
+  "domain": "architecture-services",
+  "topic": "networking",
+  "difficulty": 2,
+  "q": "Two virtual networks in different regions need their resources to communicate using private IP addresses. Which feature connects them?",
+  "options": [
+   "Availability zones",
+   "Azure Policy",
+   "Resource tags",
+   "Virtual network peering"
+  ],
+  "answer": 3,
+  "why": "VNet peering links networks so resources talk over private IPs on the Microsoft backbone.",
+  "why_not": [
+   "Zones are about resilience within a region.",
+   "Policy enforces rules; it does not link networks.",
+   "Tags organise resources; they do not connect networks.",
+   ""
+  ]
+ },
+ {
+  "id": "as-14",
+  "domain": "architecture-services",
+  "topic": "networking",
+  "difficulty": 3,
+  "q": "A company wants to reach its storage account from a virtual network using a private IP address so traffic stays off the public internet. What should it use?",
+  "options": [
+   "A private endpoint",
+   "A public IP address on the storage account",
+   "A resource lock",
+   "Azure Advisor"
+  ],
+  "answer": 0,
+  "why": "A private endpoint gives the service a private IP address inside your VNet through Azure Private Link.",
+  "why_not": [
+   "",
+   "A public IP does the opposite of keeping traffic private.",
+   "Locks prevent deletion or changes, not network exposure.",
+   "Advisor gives recommendations; it does not change connectivity."
+  ]
+ },
+ {
+  "id": "as-15",
+  "domain": "architecture-services",
+  "topic": "storage",
+  "difficulty": 1,
+  "q": "A media company needs to store large amounts of unstructured data such as images and video. Which Azure storage service suits this?",
+  "options": [
+   "Azure Policy",
+   "Azure Queue Storage",
+   "Azure Virtual Network",
+   "Azure Blob Storage"
+  ],
+  "answer": 3,
+  "why": "Blob Storage is object storage designed for unstructured data such as images, video and backups.",
+  "why_not": [
+   "Policy is a governance service.",
+   "Queue Storage holds messages for asynchronous processing.",
+   "A virtual network is not a storage service.",
+   ""
+  ]
+ },
+ {
+  "id": "as-16",
+  "domain": "architecture-services",
+  "topic": "storage",
+  "difficulty": 2,
+  "q": "A company wants to replace an on-premises file server with cloud file shares that staff can map as network drives. Which service fits?",
+  "options": [
+   "Azure Blob Storage",
+   "Azure Queue Storage",
+   "Azure Table Storage",
+   "Azure Files"
+  ],
+  "answer": 3,
+  "why": "Azure Files provides managed file shares accessible over standard file protocols such as SMB.",
+  "why_not": [
+   "Blob Storage is object storage, not a mappable network drive.",
+   "Queue Storage holds messages.",
+   "Table Storage stores NoSQL key-value data.",
+   ""
+  ]
+ },
+ {
+  "id": "as-17",
+  "domain": "architecture-services",
+  "topic": "storage",
+  "difficulty": 3,
+  "q": "Which storage redundancy option protects data against a complete regional outage?",
+  "options": [
+   "Locally redundant storage (LRS)",
+   "Zone-redundant storage (ZRS)",
+   "None; Azure cannot copy data across regions",
+   "Geo-redundant storage (GRS)"
+  ],
+  "answer": 3,
+  "why": "GRS replicates data to a secondary region far away. LRS stays in one datacenter and ZRS stays within one region.",
+  "why_not": [
+   "LRS keeps three copies in a single datacenter, so a regional outage can affect all of them.",
+   "ZRS spreads copies across zones but within one region.",
+   "Azure can replicate across regions with geo-redundant options.",
+   ""
+  ]
+ },
+ {
+  "id": "as-18",
+  "domain": "architecture-services",
+  "topic": "storage",
+  "difficulty": 2,
+  "q": "A company must keep records for many years, rarely reads them, and wants the lowest storage cost even if retrieval takes hours. Which blob access tier fits?",
+  "options": [
+   "Cool",
+   "Hot",
+   "Archive",
+   "Premium"
+  ],
+  "answer": 2,
+  "why": "The Archive tier has the lowest storage cost but data is offline and must be rehydrated before reading.",
+  "why_not": [
+   "Cool is cheaper than hot but still online; archive is cheaper for long-term rarely read data.",
+   "Hot is for frequently accessed data and has the highest storage cost.",
+   "",
+   "Premium targets low latency, not cheapest long-term storage."
+  ]
+ },
+ {
+  "id": "as-19",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 1,
+  "q": "Which Azure service provides cloud-based identity and access management, including single sign-on for cloud apps?",
+  "options": [
+   "Azure Blob Storage",
+   "Microsoft Entra ID",
+   "Azure Monitor",
+   "Azure Pricing Calculator"
+  ],
+  "answer": 1,
+  "why": "Microsoft Entra ID (formerly Azure Active Directory) manages identities and authentication.",
+  "why_not": [
+   "Blob Storage stores data.",
+   "",
+   "Monitor collects telemetry.",
+   "The calculator estimates costs."
+  ]
+ },
+ {
+  "id": "as-20",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 1,
+  "q": "Which is an example of multifactor authentication?",
+  "options": [
+   "Two different passwords",
+   "A password plus a code from an authenticator app",
+   "A very long passphrase",
+   "A password plus a security question"
+  ],
+  "answer": 1,
+  "why": "Multifactor authentication combines different kinds of proof, such as something you know (password) and something you have (your phone).",
+  "why_not": [
+   "Two passwords are still the same factor type.",
+   "",
+   "A longer passphrase is still a single factor.",
+   "A password and a security question are both things you know, so they are one factor type."
+  ]
+ },
+ {
+  "id": "as-21",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 2,
+  "q": "An administrator wants to require MFA only when users sign in from unfamiliar locations. Which capability enables this?",
+  "options": [
+   "Conditional Access",
+   "Resource locks",
+   "Availability zones",
+   "Reserved instances"
+  ],
+  "answer": 0,
+  "why": "Conditional Access evaluates signals such as location and device, then enforces if-then policies like requiring MFA.",
+  "why_not": [
+   "",
+   "Locks prevent accidental changes to resources.",
+   "Zones are about resilience.",
+   "Reserved instances are a billing discount."
+  ]
+ },
+ {
+  "id": "as-22",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 2,
+  "q": "A support engineer needs to restart VMs in one resource group but must not change anything else. Which feature grants exactly that access?",
+  "options": [
+   "Azure Advisor",
+   "Resource locks",
+   "The pricing calculator",
+   "Azure role-based access control (RBAC)"
+  ],
+  "answer": 3,
+  "why": "RBAC assigns roles at a chosen scope, so you can follow least privilege.",
+  "why_not": [
+   "Advisor offers recommendations only.",
+   "Locks limit changes for everyone; they do not grant a specific person access.",
+   "The calculator estimates costs only.",
+   ""
+  ]
+ },
+ {
+  "id": "as-23",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 2,
+  "q": "Which set lists the core principles of Zero Trust?",
+  "options": [
+   "Encrypt only data at rest, trust signed-in users, keep no logs",
+   "Trust the internal network, allow broad access, react after a breach",
+   "Use one strong firewall, trust all devices behind it, review yearly",
+   "Verify explicitly, use least-privilege access, assume breach"
+  ],
+  "answer": 3,
+  "why": "Zero Trust assumes no implicit trust: verify every request, limit access, and design as if a breach has already happened.",
+  "why_not": [
+   "Trusting all signed-in users and keeping no logs contradicts Zero Trust.",
+   "Trusting the internal network is the old perimeter model Zero Trust replaces.",
+   "Relying on a single perimeter firewall is the opposite of layered, verify-everything security.",
+   ""
+  ]
+ },
+ {
+  "id": "as-24",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 2,
+  "q": "What does the defense-in-depth strategy mean?",
+  "options": [
+   "Protecting data with multiple layers of security such as identity, network, compute and data controls",
+   "Using one administrator account with maximum permissions",
+   "Storing data only in the deepest storage tier",
+   "Relying on a single very strong perimeter firewall"
+  ],
+  "answer": 0,
+  "why": "Defense in depth uses layers so that if one control fails, others still protect your resources.",
+  "why_not": [
+   "",
+   "One all-powerful account breaks least privilege and creates a single point of failure.",
+   "Storage tiers relate to cost and access frequency, not security layering.",
+   "A single perimeter control is exactly what defense in depth avoids."
+  ]
+ },
+ {
+  "id": "as-25",
+  "domain": "architecture-services",
+  "topic": "identity-security",
+  "difficulty": 2,
+  "q": "Which service gives a unified view of your security posture across Azure and other environments and recommends how to strengthen it?",
+  "options": [
+   "Azure Service Health",
+   "Azure DNS",
+   "Azure Pricing Calculator",
+   "Microsoft Defender for Cloud"
+  ],
+  "answer": 3,
+  "why": "Defender for Cloud assesses security posture, gives recommendations and helps protect workloads.",
+  "why_not": [
+   "Service Health reports on Azure service incidents and maintenance.",
+   "DNS resolves names.",
+   "The calculator estimates costs.",
+   ""
+  ]
+ },
+ {
+  "id": "mg-01",
+  "domain": "management-governance",
+  "topic": "cost-management",
+  "difficulty": 2,
+  "q": "Which network traffic typically generates a data transfer charge in Azure?",
+  "options": [
+   "Creating a resource group",
+   "Data leaving Azure datacenters to the internet",
+   "Signing in to the portal",
+   "Data coming into Azure from the internet"
+  ],
+  "answer": 1,
+  "why": "Inbound data is generally free, while outbound data transfer (egress) is charged beyond free allowances.",
+  "why_not": [
+   "Creating a resource group has no data transfer cost.",
+   "",
+   "Signing in is not billed as data transfer.",
+   "Inbound data is generally not charged."
+  ]
+ },
+ {
+  "id": "mg-02",
+  "domain": "management-governance",
+  "topic": "cost-management",
+  "difficulty": 1,
+  "q": "Before deploying, a team wants to estimate the monthly cost of the Azure services it plans to use. Which tool should it use?",
+  "options": [
+   "Pricing calculator",
+   "Total cost of ownership (TCO) calculator",
+   "Azure Policy",
+   "Azure Service Health"
+  ],
+  "answer": 0,
+  "why": "The pricing calculator estimates the cost of Azure services you plan to deploy.",
+  "why_not": [
+   "",
+   "The TCO calculator compares on-premises costs with Azure, not a service-by-service estimate.",
+   "Policy enforces rules.",
+   "Service Health reports on incidents."
+  ]
+ },
+ {
+  "id": "mg-03",
+  "domain": "management-governance",
+  "topic": "cost-management",
+  "difficulty": 2,
+  "q": "A CFO wants to compare the cost of keeping on-premises servers with moving them to Azure. Which tool helps?",
+  "options": [
+   "Total cost of ownership (TCO) calculator",
+   "Azure Cloud Shell",
+   "Azure Policy",
+   "Azure Advisor"
+  ],
+  "answer": 0,
+  "why": "The TCO calculator estimates savings from moving on-premises workloads to Azure.",
+  "why_not": [
+   "",
+   "Cloud Shell is a command-line environment.",
+   "Policy governs configuration, not cost comparison.",
+   "Advisor gives optimisation advice for existing resources."
+  ]
+ },
+ {
+  "id": "mg-04",
+  "domain": "management-governance",
+  "topic": "cost-management",
+  "difficulty": 2,
+  "q": "Which tool lets you analyse spending, set budgets and get alerts as costs approach a limit?",
+  "options": [
+   "Azure Firewall",
+   "Azure Arc",
+   "Microsoft Cost Management",
+   "Resource locks"
+  ],
+  "answer": 2,
+  "why": "Cost Management helps you analyse costs, create budgets and receive alerts.",
+  "why_not": [
+   "Firewall filters network traffic.",
+   "Arc extends management to servers outside Azure.",
+   "",
+   "Locks prevent deletion or changes."
+  ]
+ },
+ {
+  "id": "mg-05",
+  "domain": "management-governance",
+  "topic": "cost-management",
+  "difficulty": 2,
+  "q": "Finance wants cost reports grouped by department across many resource groups. Which feature helps most?",
+  "options": [
+   "Tags",
+   "Availability zones",
+   "Resource locks",
+   "Role assignments"
+  ],
+  "answer": 0,
+  "why": "Tags are name-value labels you can apply to resources and then use to group costs.",
+  "why_not": [
+   "",
+   "Zones provide resilience.",
+   "Locks protect resources; they do not group costs.",
+   "Role assignments control access, not cost grouping."
+  ]
+ },
+ {
+  "id": "mg-06",
+  "domain": "management-governance",
+  "topic": "cost-management",
+  "difficulty": 3,
+  "q": "A company will run the same VMs steadily for the next three years and wants a lower price in exchange for the commitment. What should it consider?",
+  "options": [
+   "Azure Reservations",
+   "The free account tier",
+   "Spot virtual machines",
+   "Resource locks"
+  ],
+  "answer": 0,
+  "why": "Reservations give discounts for committing to resources for one or three years.",
+  "why_not": [
+   "",
+   "Free tiers are limited and not for long-term production workloads.",
+   "Spot VMs are cheap but can be evicted, so they suit interruptible work.",
+   "Locks are not a pricing option."
+  ]
+ },
+ {
+  "id": "mg-07",
+  "domain": "management-governance",
+  "topic": "governance",
+  "difficulty": 1,
+  "q": "A security team wants to make sure resources can only be created in approved regions. Which service enforces this?",
+  "options": [
+   "Microsoft Cost Management",
+   "Azure Arc",
+   "Azure Policy",
+   "Azure Monitor"
+  ],
+  "answer": 2,
+  "why": "Azure Policy creates and enforces rules such as allowed locations and reports compliance.",
+  "why_not": [
+   "Cost Management tracks spending.",
+   "Arc extends management to outside environments.",
+   "",
+   "Monitor collects telemetry and raises alerts."
+  ]
+ },
+ {
+  "id": "mg-08",
+  "domain": "management-governance",
+  "topic": "governance",
+  "difficulty": 2,
+  "q": "To stop anyone from accidentally deleting a production database while still allowing changes to it, which lock should be applied?",
+  "options": [
+   "CanNotDelete",
+   "ReadOnly",
+   "Audit",
+   "Deny"
+  ],
+  "answer": 0,
+  "why": "A CanNotDelete lock lets authorised users read and modify a resource but prevents deletion.",
+  "why_not": [
+   "",
+   "ReadOnly would also block modifications.",
+   "Audit is a policy effect, not a lock type.",
+   "Deny is a policy effect, not a lock type."
+  ]
+ },
+ {
+  "id": "mg-09",
+  "domain": "management-governance",
+  "topic": "governance",
+  "difficulty": 3,
+  "q": "A CanNotDelete lock is applied to a resource group. What happens to the resources inside it?",
+  "options": [
+   "Only newly created resources inherit it",
+   "They are moved to a new resource group",
+   "They inherit the lock",
+   "The lock does not affect them"
+  ],
+  "answer": 2,
+  "why": "Locks are inherited: a lock at a parent scope applies to the resources within it.",
+  "why_not": [
+   "Existing resources inherit the lock too, not only new ones.",
+   "Locks do not move resources.",
+   "",
+   "The lock does apply to child resources."
+  ]
+ },
+ {
+  "id": "mg-10",
+  "domain": "management-governance",
+  "topic": "governance",
+  "difficulty": 2,
+  "q": "Which service helps an organisation discover, classify and govern data across on-premises, multicloud and SaaS sources?",
+  "options": [
+   "Azure Container Instances",
+   "Azure Virtual Network",
+   "Azure DNS",
+   "Microsoft Purview"
+  ],
+  "answer": 3,
+  "why": "Microsoft Purview provides data governance, discovery and compliance tooling.",
+  "why_not": [
+   "Container Instances run containers.",
+   "Virtual Network is for connectivity.",
+   "DNS resolves names.",
+   ""
+  ]
+ },
+ {
+  "id": "mg-11",
+  "domain": "management-governance",
+  "topic": "governance",
+  "difficulty": 2,
+  "q": "Where can a compliance officer find audit reports and compliance documentation about Microsoft cloud services?",
+  "options": [
+   "The pricing calculator",
+   "Service Trust Portal",
+   "Azure Advisor",
+   "Azure Cloud Shell"
+  ],
+  "answer": 1,
+  "why": "The Service Trust Portal publishes compliance, audit and security documentation.",
+  "why_not": [
+   "The calculator estimates costs.",
+   "",
+   "Advisor gives recommendations about your own resources.",
+   "Cloud Shell is a command-line environment."
+  ]
+ },
+ {
+  "id": "mg-12",
+  "domain": "management-governance",
+  "topic": "governance",
+  "difficulty": 3,
+  "q": "What is the difference between Azure RBAC and Azure Policy?",
+  "options": [
+   "They are the same feature with two names",
+   "Policy controls which users sign in; RBAC controls network routing",
+   "RBAC controls costs; Policy controls identity",
+   "RBAC controls what actions users can perform; Policy controls what resource configurations are allowed"
+  ],
+  "answer": 3,
+  "why": "RBAC is about who can do what. Policy is about what the resources themselves are allowed to look like.",
+  "why_not": [
+   "They are different features with different purposes.",
+   "Sign-in is handled by Entra ID and routing by networking services.",
+   "Neither is a cost control tool in this way.",
+   ""
+  ]
+ },
+ {
+  "id": "mg-13",
+  "domain": "management-governance",
+  "topic": "management-tools",
+  "difficulty": 1,
+  "q": "An administrator must create the same 50 resources in an identical way every week. Which approach is best?",
+  "options": [
+   "Click through the portal each time",
+   "Ask support to do it manually",
+   "Email screenshots to a colleague",
+   "Script it with Azure CLI or PowerShell"
+  ],
+  "answer": 3,
+  "why": "Command-line tools are scriptable, so repeated tasks are consistent and automated.",
+  "why_not": [
+   "The portal is great for exploring but slow and error-prone for repeated tasks.",
+   "Support is not a deployment tool.",
+   "Screenshots do not create resources.",
+   ""
+  ]
+ },
+ {
+  "id": "mg-14",
+  "domain": "management-governance",
+  "topic": "management-tools",
+  "difficulty": 2,
+  "q": "Which statement about Azure Cloud Shell is correct?",
+  "options": [
+   "It supports only Bash",
+   "It is a billing report",
+   "It is a desktop app for Windows only",
+   "It is a browser-accessible shell that supports both Bash and PowerShell"
+  ],
+  "answer": 3,
+  "why": "Cloud Shell gives you an authenticated command line in the browser with Bash or PowerShell.",
+  "why_not": [
+   "It supports PowerShell as well as Bash.",
+   "It is a shell, not a report.",
+   "Cloud Shell runs in the browser rather than as a Windows-only app.",
+   ""
+  ]
+ },
+ {
+  "id": "mg-15",
+  "domain": "management-governance",
+  "topic": "management-tools",
+  "difficulty": 2,
+  "q": "A company has servers in its own datacenter and in another cloud, and wants to manage them from Azure. Which service enables this?",
+  "options": [
+   "Azure Blob Storage",
+   "Azure Advisor",
+   "Azure Arc",
+   "Azure Functions"
+  ],
+  "answer": 2,
+  "why": "Azure Arc extends Azure management to servers, Kubernetes and more running outside Azure.",
+  "why_not": [
+   "Blob Storage stores data.",
+   "Advisor recommends improvements for Azure resources.",
+   "",
+   "Functions run code."
+  ]
+ },
+ {
+  "id": "mg-16",
+  "domain": "management-governance",
+  "topic": "management-tools",
+  "difficulty": 2,
+  "q": "What is a main benefit of infrastructure as code, such as ARM templates or Bicep?",
+  "options": [
+   "Repeatable, consistent deployments defined in code",
+   "It automatically lowers licensing costs",
+   "It makes resources free",
+   "It removes the need for subscriptions"
+  ],
+  "answer": 0,
+  "why": "Infrastructure as code lets you define environments declaratively and deploy them the same way every time.",
+  "why_not": [
+   "",
+   "It does not change licensing prices by itself.",
+   "Resources still cost money.",
+   "Subscriptions are still required."
+  ]
+ },
+ {
+  "id": "mg-17",
+  "domain": "management-governance",
+  "topic": "management-tools",
+  "difficulty": 3,
+  "q": "Which service is the deployment and management layer that receives requests from the portal, CLI, PowerShell and templates?",
+  "options": [
+   "Azure Cosmos DB",
+   "Azure Traffic Manager",
+   "Azure Resource Manager",
+   "Azure Key Vault"
+  ],
+  "answer": 2,
+  "why": "Azure Resource Manager is the management layer all those tools call to create and manage resources.",
+  "why_not": [
+   "Cosmos DB is a database.",
+   "Traffic Manager routes user traffic using DNS.",
+   "",
+   "Key Vault stores secrets and keys."
+  ]
+ },
+ {
+  "id": "mg-18",
+  "domain": "management-governance",
+  "topic": "monitoring",
+  "difficulty": 2,
+  "q": "Which service gives personalised recommendations to improve reliability, security, performance, cost and operational excellence of your Azure resources?",
+  "options": [
+   "Azure Service Health",
+   "Azure Reservations",
+   "Azure Advisor",
+   "Azure Policy"
+  ],
+  "answer": 2,
+  "why": "Azure Advisor analyses your resources and recommends improvements across those pillars.",
+  "why_not": [
+   "Service Health reports incidents and maintenance affecting your services.",
+   "Reservations are a pricing discount option.",
+   "",
+   "Policy enforces rules rather than recommending improvements."
+  ]
+ },
+ {
+  "id": "mg-19",
+  "domain": "management-governance",
+  "topic": "monitoring",
+  "difficulty": 2,
+  "q": "Which service tells you about Azure outages or planned maintenance that affect your resources?",
+  "options": [
+   "Azure Service Health",
+   "Azure Policy",
+   "Azure Advisor",
+   "Azure Reservations"
+  ],
+  "answer": 0,
+  "why": "Service Health provides personalised alerts and guidance when Azure service issues or maintenance affect you.",
+  "why_not": [
+   "",
+   "Policy enforces rules.",
+   "Advisor recommends improvements rather than reporting outages.",
+   "Reservations are a pricing option."
+  ]
+ },
+ {
+  "id": "mg-20",
+  "domain": "management-governance",
+  "topic": "monitoring",
+  "difficulty": 1,
+  "q": "Which service collects metrics and logs from resources and applications, and can raise alerts?",
+  "options": [
+   "Azure Firewall",
+   "Azure Storage",
+   "Azure Monitor",
+   "Azure Lighthouse"
+  ],
+  "answer": 2,
+  "why": "Azure Monitor collects, analyses and acts on telemetry, including alerts.",
+  "why_not": [
+   "Firewall filters traffic.",
+   "Storage stores data rather than analysing telemetry.",
+   "",
+   "Lighthouse supports cross-tenant management."
+  ]
+ }
+]
