@@ -52,6 +52,12 @@ docker build -t az900-readiness .
 docker run -p 8000:8000 -v az900data:/data -e ANTHROPIC_API_KEY=... az900-readiness
 ```
 
+### Public demo on Render
+
+This repository includes a Render Blueprint for deploying the app as a Docker web service. To create a public demo, push the repository to GitHub, sign in to Render, choose **New → Blueprint**, and connect this repository. Render reads `render.yaml` and builds the app; the health check uses `/api/meta`.
+
+The Blueprint uses Render's free instance for a prototype. Free instances spin down when idle and have an ephemeral filesystem, so practice history stored in SQLite can be lost when the service restarts, spins down, or redeploys. Use a persistent disk on a paid instance if learner history must survive those events. AI explanations remain optional; no API key is needed for the core app.
+
 ## How the readiness score works
 
 Every answer is evidence about one of 14 topics. For each topic we keep a Beta distribution over "the chance you answer a question on this topic correctly".
