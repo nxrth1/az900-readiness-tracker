@@ -8,10 +8,12 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 
 DATA_FILE = Path(os.environ.get("QUESTIONS_FILE", Path(__file__).parent / "data" / "questions.json"))
+REVIEW_FILE = Path(os.environ.get("QUESTION_REVIEW_FILE", Path(__file__).parent / "data" / "question_review.json"))
 
 # Domains and topics follow the three domains of the public AZ-900 skills outline.
 # Weights are the midpoints of the published ranges (25-30, 35-40, 30-35), normalised to sum to 1.
@@ -124,10 +126,38 @@ def validate(raw: list[dict]) -> list[str]:
     return problems
 
 
+def validate_review_metadata(raw: list[dict], metadata: dict) -> list[str]:
+    problems: list[str] = []
+    if not isinstance(metadata, dict):
+        return ["question review metadata must be an object"]
+    if not isinstance(metadata.get("source_url"), str) or not metadata["source_url"].startswith("https://"):
+        problems.append("question review metadata needs an HTTPS source_url")
+    reviews = metadata.get("questions")
+    if not isinstance(reviews, dict):
+        return problems + ["question review metadata needs a questions object"]
+    bank_ids = {question.get("id") for question in raw}
+    for missing in sorted(bank_ids - reviews.keys()):
+        problems.append(f"{missing}: missing question review metadata")
+    for stale in sorted(reviews.keys() - bank_ids):
+        problems.append(f"{stale}: review metadata has no matching question")
+    for question_id, reviewed_on in reviews.items():
+        if reviewed_on is None:
+            continue
+        try:
+            checked = date.fromisoformat(reviewed_on)
+            if checked.isoformat() != reviewed_on or checked > date.today():
+                raise ValueError
+        except (TypeError, ValueError):
+            problems.append(f"{question_id}: reviewed_on must be null or an ISO date")
+    return problems
+
+
 @lru_cache(maxsize=1)
 def load_bank() -> dict[str, Question]:
     raw = json.loads(DATA_FILE.read_text(encoding="utf-8"))
     problems = validate(raw)
+    review = json.loads(REVIEW_FILE.read_text(encoding="utf-8"))
+    problems.extend(validate_review_metadata(raw, review))
     if problems:
         raise QuestionBankError("Invalid question bank:\n- " + "\n- ".join(problems))
     return {
@@ -152,5 +182,8 @@ if __name__ == "__main__":  # pragma: no cover
     for q in bank.values():
         by_domain[q.domain] = by_domain.get(q.domain, 0) + 1
     print(f"OK: {len(bank)} questions")
+    review_data = json.loads(REVIEW_FILE.read_text(encoding="utf-8"))
+    reviewed = sum(value is not None for value in review_data["questions"].values())
+    print(f"Content review: {reviewed}/{len(review_data['questions'])} checked against {review_data['source_url']}")
     for d, n in by_domain.items():
         print(f"  {DOMAINS[d]['name']}: {n} ({n / len(bank):.0%}; exam weight ~{DOMAIN_WEIGHTS[d]:.0%})")

@@ -21,8 +21,10 @@ Built for the **#1MillionDevs Vibe Coding Hackathon: AZ-900 Exam Prep Edition** 
 - **Flexible practice and saved questions.** Choose a short or longer session, drill a domain or topic, save questions for later, and retry misses immediately from your results.
 - **Exam-date study planner.** Give it your exam date, hours per week and study days. It builds a day-by-day schedule that puts time where it raises your score most, interleaves topics, adds a mock exam about a week out, and keeps the final day to light review of your weak spots and confident mistakes. Mark blocks done or skipped, move them to another day, and track completion.
 - **Mock exam.** 40 questions sampled by exam weight, no feedback until the end, then a domain breakdown and review of every miss. An optional 45-minute timer helps you practise under time pressure.
+- **Resumable sessions and exam review.** In-progress sessions save on this device. Mock exams include question navigation, answered/flagged states, keyboard navigation, a finish confirmation, and a review of unanswered questions.
 - **Portable learner data.** Download a JSON backup with practice history, saved questions and planner progress, then import it on another browser. Import replaces the current practice history after confirmation.
 - **Accessible progress views.** Topic status includes an evidence label as well as colour, and the dashboard includes recent practice activity.
+- **Learning insights.** See first-attempt accuracy separately from repeat attempts, plus accuracy for answers marked sure versus guesses.
 - **Explain it simply (optional, Claude).** Re-explains a question in plain English or Kiswahili with an everyday East African analogy, grounded in the curated explanation so it cannot invent facts. See [docs/PROMPTS.md](docs/PROMPTS.md).
 
 ## Quick start
@@ -106,9 +108,9 @@ SQLite keeps setup to zero. The queries are plain SQL, so moving to Postgres or 
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/api/meta` | Domains, topics, weights, counts, whether AI is on |
-| GET | `/api/quiz?learner=&mode=&n=&domain=&topic=` | Questions (never includes answers). Modes: `adaptive`, `topic`, `domain`, `exam` |
+| GET | `/api/quiz?learner=&mode=&n=&domain=&topic=` | Questions (never includes answers). Modes: `adaptive`, `topic`, `domain`, `exam`, `saved` |
 | POST | `/api/answer` | Record an answer; returns correctness and explanations |
-| GET | `/api/readiness?learner=` | Full report: overall, domains, topics, wins, misconceptions, history |
+| GET | `/api/readiness?learner=` | Full report: overall, domains, topics, wins, misconceptions, history, first/repeat and confidence insights |
 | GET | `/api/plan?learner=&exam_date=&hours_per_week=&days=` | Day-by-day study plan from the learner's current readiness (`days` = weekday numbers, Mon=0) |
 | POST | `/api/explain` | Claude explanation (or built-in fallback) |
 | POST | `/api/demo/seed?learner=` | Load a deterministic demo history |
@@ -122,9 +124,9 @@ Interactive docs at `/docs`. Learners are anonymous random IDs stored in the bro
 
 ```
 app/            backend (see architecture above) and demo.py (demo data)
-app/data/       questions.json, the question bank
+app/data/       questions.json and question_review.json, the question bank and review ledger
 static/         index.html, app.js, styles.css
-tests/          64 tests: bank validity, scoring maths, selection, planner, API, Claude path (stubbed)
+tests/          question-bank, scoring, selection, planner, API, and Claude-path tests (stubbed)
 docs/           PROMPTS.md, PITCH.md, screenshots
 ```
 
@@ -135,6 +137,8 @@ Need per topic = exam weight x (gap to a target a little above 80% + a small bon
 ## Question bank
 
 `app/data/questions.json` holds 64 original questions across the three domains and 14 topics (cloud concepts 19, architecture and services 25, management and governance 20). Each has a curated explanation and a one-line reason **every wrong option is wrong**.
+
+`app/data/question_review.json` tracks an ISO review date per question against the linked Microsoft Learn study guide; `null` explicitly means **not yet checked**. Do not set a review date until a person has checked the question, answer, rationale, and topic mapping against the current guide. Re-run `python -m app.questions` after editing the bank; the validator requires review metadata for every question and reports how many have actually been reviewed.
 
 ```json
 {

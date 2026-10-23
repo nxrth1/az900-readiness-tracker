@@ -1886,6 +1886,133 @@ select {
 .missed .btn {
   margin-top: 8px;
 }
+.interrupted-session {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 16px;
+  border-color: color-mix(in srgb, var(--teal) 38%, var(--line));
+}
+.interrupted-session h2 {
+  margin: 8px 0 3px;
+}
+.interrupted-session p {
+  margin: 0;
+  color: var(--muted);
+}
+.exam-navigation {
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--ink) 3%, var(--card));
+}
+.exam-nav-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.exam-nav-summary span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.exam-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: 7px;
+}
+.exam-nav-item {
+  position: relative;
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 650;
+  font-size: 0.78rem;
+}
+.exam-nav-item.answered {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+}
+.exam-nav-item.flagged::after {
+  position: absolute;
+  top: -5px;
+  right: -3px;
+  color: var(--clay);
+  content: "◆";
+  font-size: 0.62rem;
+}
+.exam-nav-item.current {
+  outline: 3px solid var(--teal);
+  outline-offset: 1px;
+}
+.exam-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.exam-controls .muted {
+  flex: 1 1 100%;
+  font-size: 0.82rem;
+}
+.exam-controls .btn {
+  min-height: 38px;
+  padding: 7px 11px;
+}
+.learning-insights {
+  margin-top: 16px;
+}
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.insight-grid > div {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--teal) 4%, var(--card));
+}
+.insight-grid strong,
+.insight-grid span {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+.insight-grid b {
+  font-size: 1.3rem;
+  letter-spacing: -0.04em;
+}
+.learning-insights > p {
+  margin: 0;
+  font-size: 0.78rem;
+}
+.form-error {
+  padding: 10px 12px;
+  border-left: 3px solid var(--clay);
+  background: var(--clay-soft);
+  color: var(--clay);
+  border-radius: 7px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
 @media (max-width: 640px) {
   .hero .next-step,
@@ -1913,5 +2040,23 @@ select {
   .pblock-actions {
     grid-column: 1 / -1;
     justify-content: flex-start;
+  }
+  .interrupted-session {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .exam-nav-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  .exam-nav-summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .exam-controls .btn {
+    flex: 1;
+  }
+  .insight-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

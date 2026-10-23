@@ -1,12 +1,31 @@
 import json
 from collections import Counter
 
-from app.questions import DATA_FILE, DOMAIN_WEIGHTS, DOMAINS, TOPIC_DOMAIN, load_bank, validate
+from app.questions import DATA_FILE, DOMAIN_WEIGHTS, DOMAINS, REVIEW_FILE, TOPIC_DOMAIN, load_bank, validate, validate_review_metadata
 
 
 def test_bank_is_valid():
     raw = json.loads(DATA_FILE.read_text(encoding="utf-8"))
     assert validate(raw) == []
+
+
+def test_question_review_metadata_covers_the_bank_and_is_honest_about_status():
+    raw = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    review = json.loads(REVIEW_FILE.read_text(encoding="utf-8"))
+    assert validate_review_metadata(raw, review) == []
+    assert review["source_url"].startswith("https://learn.microsoft.com/")
+    assert set(review["questions"]) == {question["id"] for question in raw}
+    assert all(value is None for value in review["questions"].values())
+
+
+def test_question_review_metadata_rejects_missing_questions_and_bad_dates():
+    assert validate_review_metadata(
+        [{"id": "q1"}], {"source_url": "https://learn.microsoft.com", "questions": {"old": "yesterday"}}
+    ) == [
+        "q1: missing question review metadata",
+        "old: review metadata has no matching question",
+        "old: reviewed_on must be null or an ISO date",
+    ]
 
 
 def test_enough_questions_and_unique_ids():

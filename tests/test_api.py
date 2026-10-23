@@ -43,6 +43,21 @@ def test_answer_flow_updates_readiness(client):
     assert len(rep["topics"]) == 14 and len(rep["domains"]) == 3
 
 
+def test_readiness_reports_new_repeat_and_confidence_accuracy(client):
+    q = next(iter(load_bank().values()))
+    client.post("/api/answer", json={
+        "learner": L, "question_id": q.id, "choice": q.answer, "confidence": "sure",
+    })
+    client.post("/api/answer", json={
+        "learner": L, "question_id": q.id, "choice": (q.answer + 1) % 4, "confidence": "guess",
+    })
+    insights = client.get("/api/readiness", params={"learner": L}).json()["insights"]
+    assert insights["new_questions"] == {"correct": 1, "total": 1, "accuracy": 1.0}
+    assert insights["repeat_questions"] == {"correct": 0, "total": 1, "accuracy": 0.0}
+    assert insights["confidence"]["sure"]["accuracy"] == 1.0
+    assert insights["confidence"]["guess"]["accuracy"] == 0.0
+
+
 def test_validation(client):
     q = next(iter(load_bank().values()))
     assert client.post("/api/answer", json={"learner": L, "question_id": q.id, "choice": 4}).status_code == 422

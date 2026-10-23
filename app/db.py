@@ -100,7 +100,7 @@ def replace_attempts(learner: str, rows: list[tuple]) -> int:
 def get_attempt_records(learner: str) -> list[dict]:
     with connect() as c:
         rows = c.execute(
-            "SELECT question_id, chosen AS choice, confidence, mode, seconds, ts"
+            "SELECT question_id, chosen AS choice, correct, confidence, mode, seconds, ts"
             " FROM attempts WHERE learner_id = ? ORDER BY ts",
             (learner,),
         ).fetchall()

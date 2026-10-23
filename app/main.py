@@ -160,8 +160,42 @@ def readiness(learner: str) -> dict:
     attempts = db.get_attempts(learner)
     report = scoring.readiness(attempts)
     report["history"] = scoring.history(attempts)
+    report["insights"] = learning_insights(db.get_attempt_records(learner))
     report["total_questions"] = len(load_bank())
     return report
+
+
+def learning_insights(records: list[dict]) -> dict:
+    seen: set[str] = set()
+    new_correct = new_total = repeat_correct = repeat_total = 0
+    confidence = {"sure": {"correct": 0, "total": 0}, "guess": {"correct": 0, "total": 0}}
+    for record in records:
+        first_attempt = record["question_id"] not in seen
+        seen.add(record["question_id"])
+        correct = bool(record["correct"])
+        if first_attempt:
+            new_total += 1
+            new_correct += int(correct)
+        else:
+            repeat_total += 1
+            repeat_correct += int(correct)
+        bucket = confidence[record["confidence"]]
+        bucket["total"] += 1
+        bucket["correct"] += int(correct)
+
+    def accuracy(correct: int, total: int) -> float | None:
+        return correct / total if total else None
+
+    return {
+        "new_questions": {"correct": new_correct, "total": new_total, "accuracy": accuracy(new_correct, new_total)},
+        "repeat_questions": {
+            "correct": repeat_correct, "total": repeat_total, "accuracy": accuracy(repeat_correct, repeat_total),
+        },
+        "confidence": {
+            name: {**values, "accuracy": accuracy(values["correct"], values["total"])}
+            for name, values in confidence.items()
+        },
+    }
 
 
 @app.get("/api/plan")

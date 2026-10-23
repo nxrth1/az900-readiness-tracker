@@ -12,6 +12,7 @@
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch (_) { /* private mode */ } },
+    remove(k) { try { localStorage.removeItem(k); } catch (_) { /* private mode */ } },
   };
   const savedIds = () => {
     try {
@@ -40,9 +41,34 @@
     }
     return id;
   })();
+  const SESSION_KEY = `az900.session.${learner}`;
+  const loadSession = () => {
+    try {
+      const session = JSON.parse(store.get(SESSION_KEY) || 'null');
+      if (!session || session.version !== 1 || !Array.isArray(session.items)
+        || !['adaptive', 'topic', 'domain', 'exam', 'saved', 'retry'].includes(session.mode)
+        || !Number.isInteger(session.i) || session.i < 0 || session.i >= session.items.length
+        || !session.items.every((item) => item && typeof item.id === 'string'
+          && Array.isArray(item.options) && item.options.length === 4
+          && Array.isArray(item.order) && item.order.length === 4
+          && item.order.every((index) => Number.isInteger(index) && index >= 0 && index < 4))
+        || (session.deadline !== null && session.deadline !== undefined && !Number.isFinite(session.deadline))) return null;
+      session.answers = Array.from({ length: session.items.length }, (_, index) => {
+        const answer = Array.isArray(session.answers) ? session.answers[index] : null;
+        return answer && Number.isInteger(answer.picked) && answer.picked >= 0 && answer.picked < 4
+          ? { picked: answer.picked, sure: answer.sure !== false, persisted: answer.persisted === true } : null;
+      });
+      session.flags = Array.from({ length: session.items.length }, (_, index) =>
+        Array.isArray(session.flags) ? Boolean(session.flags[index]) : false);
+      session.results = Array.isArray(session.results) ? session.results : [];
+      return session;
+    } catch (_) { return null; }
+  };
 
   async function api(path, opts = {}) {
-    const res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts });
+    let res;
+    try { res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts }); }
+    catch (error) { throw new Error(`Could not connect to the server. Check your connection and retry. (${error.message})`); }
     if (!res.ok) {
       let msg = `Request failed (${res.status})`;
       try { const j = await res.json(); if (j.detail) msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail); } catch (_) { /* ignore */ }
@@ -59,7 +85,49 @@
   }
 
   // ---------- state ----------
-  const S = { view: 'dashboard', meta: null, report: null, quiz: null, lang: 'en', loading: false, plan: null, planError: null, planPrefs: null, timer: null };
+  const loadPlanSnapshot = () => {
+    try {
+      const plan = JSON.parse(store.get('az900.planSnapshot') || 'null');
+      return plan && Array.isArray(plan.days) && typeof plan.exam === 'string' ? plan : null;
+    } catch (_) { return null; }
+  };
+  const S = { view: 'dashboard', meta: null, report: null, quiz: null, interrupted: loadSession(), lang: 'en', loading: false, plan: null, previousPlan: loadPlanSnapshot(), planError: null, planNotice: null, planPrefs: null, timer: null, lastTimerAnnouncement: null };
+
+  function saveSession() {
+    if (!S.quiz) return;
+    try {
+      store.set(SESSION_KEY, JSON.stringify({ ...S.quiz, version: 1, savedAt: Date.now() }));
+    } catch (_) { toast('Could not save this session on this device. Your submitted answers are still recorded.'); }
+  }
+
+  function clearSavedSession() {
+    store.remove(SESSION_KEY);
+    S.interrupted = null;
+  }
+
+  function resumeSession() {
+    if (!S.interrupted) return;
+    const session = S.interrupted;
+    S.interrupted = null;
+    S.quiz = {
+      ...session,
+      answers: Array.isArray(session.answers) ? session.answers : [],
+      flags: Array.isArray(session.flags) ? session.flags : [],
+      results: Array.isArray(session.results) ? session.results : [],
+      busy: false,
+      t0: Date.now(),
+    };
+    const answer = S.quiz.answers[S.quiz.i];
+    S.quiz.picked = answer && Number.isInteger(answer.picked) ? answer.picked
+      : S.quiz.mode !== 'exam' && Number.isInteger(session.picked) ? session.picked : null;
+    S.quiz.sure = answer ? answer.sure !== false : session.sure !== false;
+    S.quiz.answered = S.quiz.mode !== 'exam' ? (S.quiz.results[S.quiz.i] || null) : null;
+    S.view = 'quiz';
+    saveSession();
+    render();
+    startExamClock();
+    focusQuizQuestion();
+  }
 
   // ---------- colour scale for the topic map ----------
   const STOPS = [[0, [227, 154, 122]], [0.5, [239, 230, 208]], [1, [111, 191, 176]]];
@@ -133,6 +201,18 @@
     return `about ${Math.round(p * 100)}%`;
   }
 
+  function interruptedSessionCard() {
+    if (!S.interrupted) return '';
+    const session = S.interrupted;
+    const completed = session.results ? session.results.length : 0;
+    const label = session.mode === 'exam' ? 'Mock exam' : 'Practice session';
+    return `<section class="card interrupted-session" aria-label="Interrupted session">
+      <div><span class="chip close">Session saved</span><h2>${label} in progress</h2>
+        <p>${session.i + 1} of ${session.items.length} questions · ${completed} responses recorded. Resume where you left off.</p></div>
+      <div class="row"><button class="btn primary" data-act="resume-session">Resume session</button><button class="btn quiet" data-act="discard-session">Discard</button></div>
+    </section>`;
+  }
+
   function domainBars(r) {
     return r.domains.map((d) => `
       <div class="dom">
@@ -184,6 +264,24 @@
     }).join('')}</div>`;
   }
 
+  function learningInsights(insights) {
+    const accuracy = (value) => value === null ? 'Not enough data' : pct(value);
+    const newSet = insights.new_questions;
+    const repeats = insights.repeat_questions;
+    const sure = insights.confidence.sure;
+    const guess = insights.confidence.guess;
+    return `<section class="card learning-insights" aria-labelledby="h-insights">
+      <h2 id="h-insights">What your answers show</h2>
+      <div class="insight-grid">
+        <div><strong>New questions</strong><b>${accuracy(newSet.accuracy)}</b><span>${newSet.correct}/${newSet.total} correct first attempts</span></div>
+        <div><strong>Repeat attempts</strong><b>${accuracy(repeats.accuracy)}</b><span>${repeats.correct}/${repeats.total} correct repeats</span></div>
+        <div><strong>When you're sure</strong><b>${accuracy(sure.accuracy)}</b><span>${sure.correct}/${sure.total} confident answers correct</span></div>
+        <div><strong>When guessing</strong><b>${accuracy(guess.accuracy)}</b><span>${guess.correct}/${guess.total} guesses correct</span></div>
+      </div>
+      <p class="muted">New-question accuracy better reflects recall than repeats. Confidence is useful when compared with correctness; a small sample can swing these percentages.</p>
+    </section>`;
+  }
+
   function winsList(r) {
     if (!r.wins.length) return '<p class="muted">Nothing stands out. Keep your strong topics fresh with a mixed review.</p>';
     return r.wins.map((w, i) => `
@@ -201,6 +299,7 @@
     const r = S.report; const o = r.overall;
     if (o.answered === 0) {
       return `
+        ${interruptedSessionCard()}
         <div class="card empty">
           <h1>See how ready you really are</h1>
           <p>Answer practice questions and this page turns them into an honest estimate of your AZ-900 score, broken down by exam domain and topic, with the next best thing to study.</p>
@@ -243,6 +342,7 @@
         </div>
       </div>
 
+      ${interruptedSessionCard()}
       <div class="grid two top-align" style="margin-top:16px">
         <div class="grid">
           <section class="card" aria-labelledby="h-dom"><h2 id="h-dom">By exam domain</h2>${domainBars(r)}</section>
@@ -254,6 +354,7 @@
         <section class="card" aria-labelledby="h-win"><h2 id="h-win">Biggest wins next</h2>${winsList(r)}${mis ? `<div style="margin-top:10px">${mis}</div>` : ''}</section>
       </div>
 
+      ${learningInsights(r.insights)}
       <section class="card tmap" style="margin-top:16px" aria-labelledby="h-map"><h2 id="h-map">Topic map</h2>${topicMap(r)}</section>
 
       <div class="row" style="margin-top:10px">
@@ -274,6 +375,7 @@
     return `
       <h1>Practice</h1>
       <p class="muted">${m.total_questions} original questions across the three exam domains. After every answer you can mark how sure you were; the tracker uses that to tell lucky guesses from real knowledge.</p>
+      ${interruptedSessionCard()}
       <div class="practice-options card">
         <label for="practice-count">Questions per session</label>
         <select id="practice-count">
@@ -302,13 +404,15 @@
     const Q = S.quiz; const item = Q.items[Q.i]; const done = Q.answered;
     const exam = Q.mode === 'exam';
     const timeExpired = exam && Q.deadline && Date.now() >= Q.deadline;
+    const flagged = Boolean(Q.flags && Q.flags[Q.i]);
+    const answered = Q.answers && Q.answers[Q.i] && Number.isInteger(Q.answers[Q.i].picked);
     const opts = item.order.map((orig, k) => {
       let cls = 'opt'; let mark = '';
       if (done) {
         if (orig === done.correct_index) { cls += ' right'; mark = '<span class="mk">Correct</span>'; }
         else if (k === Q.picked) { cls += ' wrong'; mark = '<span class="mk">Your answer</span>'; }
       } else if (k === Q.picked) cls += ' sel';
-      return `<button class="${cls}" data-act="pick" data-k="${k}" ${done || timeExpired ? 'disabled' : ''} aria-pressed="${k === Q.picked}">
+      return `<button class="${cls}" data-act="pick" data-k="${k}" ${done || (timeExpired && exam) ? 'disabled' : ''} aria-pressed="${k === Q.picked}">
         <span class="let">${LETTERS[k]}</span><span>${esc(item.options[orig])}</span>${mark}</button>`;
     }).join('');
 
@@ -318,6 +422,15 @@
       controls = `<div class="row"><p class="timer-expired" role="status">Time is up. Unanswered questions are left blank.</p><button class="btn primary" data-act="finish-exam">Finish exam</button></div>`;
     } else if (done && !exam) {
       controls = '';  // the Next button follows the feedback panel below
+    } else if (exam) {
+      controls = `
+        <div class="exam-controls">
+          <button class="btn" data-act="previous-question" ${Q.i === 0 ? 'disabled' : ''}>Previous</button>
+          <button class="btn" data-act="toggle-flag" aria-pressed="${flagged}">${flagged ? 'Flagged for review' : 'Flag for review'}</button>
+          <span class="muted">${answered ? 'Answer saved on this device' : 'Not answered yet'}</span>
+          <button class="btn" data-act="next-question">${last ? 'Review answers' : answered ? 'Save & next' : 'Skip'}</button>
+          <button class="btn primary" data-act="finish-exam">Finish exam</button>
+        </div>`;
     } else {
       const label = exam ? (last ? 'Finish exam' : 'Next question') : 'Check answer';
       controls = `
@@ -336,7 +449,7 @@
     if (done && !exam) {
       feedback = `
         <div class="feedback ${done.correct ? 'ok' : 'no'}" role="region" aria-label="Feedback">
-          <h3>${done.correct ? 'Correct' : 'Not quite'}</h3>
+          <h3 id="feedback-title" tabindex="-1">${done.correct ? 'Correct' : 'Not quite'}</h3>
           ${done.correct ? '' : `<p>${esc(done.why_not)}</p>`}
           <p>${esc(done.explanation)}</p>
           ${S.meta.ai ? `
@@ -362,11 +475,23 @@
           <span class="qtag">${exam ? 'Mock exam' : Q.mode === 'saved' ? 'Saved review' : Q.mode === 'retry' ? 'Retry missed' : 'Practice'} &middot; Question ${Q.i + 1} of ${Q.items.length} &middot; ${esc(item.topic_name)}</span>
           <div class="bar" aria-hidden="true"><i style="width:${(Q.i / Q.items.length) * 100}%"></i></div>
           ${timerLabel}
+          ${exam ? `<span id="timer-announcement" class="sr-only" aria-live="polite"></span>` : ''}
           <button class="btn quiet save-question" data-act="toggle-save" data-question="${esc(item.id)}">${isSaved ? 'Saved' : 'Save for later'}</button>
           <button class="btn quiet" data-act="quit">Quit</button>
         </div>
-        <div class="qtext">${esc(item.q)}</div>
+        <h2 class="qtext" id="question-title" tabindex="-1">${esc(item.q)}</h2>
+        ${exam ? `<section class="exam-navigation" aria-label="Exam question navigation">
+          <div class="exam-nav-summary" tabindex="-1"><strong>Question review</strong><span>${Q.answers.filter((answer) => answer && Number.isInteger(answer.picked)).length} answered · ${Q.flags.filter(Boolean).length} flagged · ${Q.items.length - Q.answers.filter((answer) => answer && Number.isInteger(answer.picked)).length} unanswered</span></div>
+          <div class="exam-nav-grid">${Q.items.map((question, index) => {
+            const answer = Q.answers[index];
+            const state = answer && Number.isInteger(answer.picked) ? 'answered' : 'unanswered';
+            return `<button class="exam-nav-item ${state} ${Q.flags[index] ? 'flagged' : ''} ${index === Q.i ? 'current' : ''}"
+              data-act="go-question" data-index="${index}" aria-current="${index === Q.i ? 'step' : 'false'}"
+              aria-label="Question ${index + 1}, ${state}${Q.flags[index] ? ', flagged for review' : ''}">${index + 1}</button>`;
+          }).join('')}</div>
+        </section>` : ''}
         <div class="opts">${opts}</div>
+        ${Q.error ? `<p id="quiz-error" class="form-error" role="alert" tabindex="-1">${esc(Q.error)}</p>` : ''}
         <div style="margin-top:16px">${controls}</div>
         ${feedback}
       </div>`;
@@ -388,6 +513,12 @@
         el.classList.toggle('urgent', left <= 300);
         el.setAttribute('aria-label', `${Math.ceil(left / 60)} minutes remaining`);
       }
+      const announce = $('#timer-announcement');
+      const threshold = left <= 60 ? '1 minute remaining' : left <= 300 ? '5 minutes remaining' : null;
+      if (threshold && threshold !== S.lastTimerAnnouncement && announce) {
+        announce.textContent = threshold;
+        S.lastTimerAnnouncement = threshold;
+      }
       if (!left) {
         clearInterval(S.timer);
         S.timer = null;
@@ -401,6 +532,11 @@
   async function submitAnswer() {
     const Q = S.quiz; const item = Q.items[Q.i];
     if (Q.picked === null || Q.busy) return null;
+    if (Q.mode === 'exam') {
+      Q.answers[Q.i] = { picked: Q.picked, sure: Q.sure };
+      saveSession();
+      return { saved: true };
+    }
     Q.busy = true;
     const orig = item.order[Q.picked];
     try {
@@ -413,6 +549,9 @@
       });
       Q.results.push({ item, chosen: orig, sure: Q.sure, ...res });
       Q.answered = res;
+      Q.error = null;
+      Q.answers[Q.i] = { picked: Q.picked, sure: Q.sure };
+      saveSession();
       return res;
     } finally { Q.busy = false; }
   }
@@ -421,8 +560,73 @@
     const Q = S.quiz;
     if (Q.i >= Q.items.length - 1) { await finishQuiz(); return; }
     Q.i += 1; Q.picked = null; Q.answered = null; Q.t0 = Date.now();
+    Q.sure = true;
+    saveSession();
     render();
     window.scrollTo({ top: 0 });
+    focusQuizQuestion();
+  }
+
+  function focusQuizQuestion() {
+    const title = $('#question-title');
+    if (title) title.focus({ preventScroll: true });
+  }
+
+  function moveExamQuestion(index) {
+    const Q = S.quiz;
+    if (!Q || Q.mode !== 'exam' || index < 0 || index >= Q.items.length) return;
+    Q.answers[Q.i] = Q.picked === null ? null : { picked: Q.picked, sure: Q.sure };
+    Q.i = index;
+    const answer = Q.answers[index];
+    Q.picked = answer ? answer.picked : null;
+    Q.sure = answer ? answer.sure !== false : true;
+    Q.answered = null;
+    Q.t0 = Date.now();
+    saveSession();
+    render();
+    focusQuizQuestion();
+  }
+
+  async function submitExam() {
+    const Q = S.quiz;
+    Q.answers[Q.i] = Q.picked === null ? null : { picked: Q.picked, sure: Q.sure };
+    const unanswered = Q.answers.filter((answer) => !answer || !Number.isInteger(answer.picked)).length;
+    const confirmed = window.confirm(
+      `Finish this mock exam? ${Q.items.length - unanswered} answered, ${unanswered} unanswered${unanswered ? '. Unanswered questions will be left blank' : ''}.`
+    );
+    if (!confirmed) return;
+    saveSession();
+    Q.busy = true;
+    render();
+    try {
+      for (let i = 0; i < Q.items.length; i++) {
+        const answer = Q.answers[i];
+        if (!answer || !Number.isInteger(answer.picked) || answer.persisted) continue;
+        const item = Q.items[i];
+        const chosen = item.order[answer.picked];
+        const result = await api('/api/answer', {
+          method: 'POST',
+          body: JSON.stringify({
+            learner, question_id: item.id, choice: chosen, confidence: answer.sure ? 'sure' : 'guess',
+            mode: 'exam', seconds: 0,
+          }),
+        });
+        Q.results[i] = { item, chosen, sure: answer.sure, ...result };
+        answer.persisted = true;
+        Q.error = null;
+        saveSession();
+      }
+      Q.results = Q.results.filter(Boolean);
+      Q.busy = false;
+      await finishQuiz();
+    } catch (error) {
+      Q.busy = false;
+      Q.error = `Could not submit the exam: ${error.message}. Your answers remain saved here. Try finishing again.`;
+      saveSession();
+      render();
+      const errorEl = $('#quiz-error');
+      if (errorEl) errorEl.focus();
+    }
   }
 
   async function finishQuiz() {
@@ -430,6 +634,7 @@
     clearInterval(S.timer); S.timer = null;
     try { S.report = await api(`/api/readiness?learner=${learner}`); } catch (e) { toast(`Could not refresh readiness: ${e.message}`); }
     Q.after = S.report ? S.report.overall.score : null;
+    clearSavedSession();
     S.plan = null;
     S.view = 'results';
     render();
@@ -444,9 +649,12 @@
     const domName = (id) => (S.meta.domains.find((d) => d.id === id) || { name: id }).name;
     const delta = Q.after !== null && Q.before !== null ? Math.round((Q.after - Q.before) * 100) : null;
     const missed = R.filter((x) => !x.correct);
+    const blankCount = Q.mode === 'exam' ? Q.items.length - R.length : 0;
+    const flagged = Q.mode === 'exam' ? Q.flags.map((value, index) => value ? index : -1).filter((index) => index >= 0) : [];
     return `
       <h1>${Q.mode === 'exam' ? 'Mock exam complete' : 'Session complete'}</h1>
       <p class="muted">${Q.mode === 'exam' ? 'Your mock is complete. Review the domain breakdown and revisit missed questions before your next attempt.' : 'A little review now makes this practice session more useful.'}</p>
+      ${blankCount ? `<p class="callout results-blank">${blankCount} question${blankCount === 1 ? ' was' : 's were'} left unanswered and were not counted as incorrect.</p>` : ''}
       <div class="res-grid">
         <div class="card"><b>${right}/${R.length}</b><span class="muted">correct (${pct(R.length ? right / R.length : 0)})</span></div>
         <div class="card"><b>${delta === null ? '--' : `${delta > 0 ? '+' : ''}${delta} pts`}</b><span class="muted">change in your estimated exam score</span></div>
@@ -467,7 +675,18 @@
             <p style="margin:6px 0 0">${esc(x.why_not)} ${esc(x.explanation)}</p>
             <button class="btn quiet" data-act="toggle-save" data-question="${esc(x.item.id)}">${savedIds().includes(x.item.id) ? 'Saved for later' : 'Save question for later'}</button>
           </div>`).join('') : '<p class="muted">Every answer was right. Your dashboard has the next best topic to stretch.</p>'}
-      </section>`;
+      </section>
+      ${flagged.length ? `<section class="card">
+        <h2>Flagged for review</h2>
+        ${flagged.map((index) => {
+          const item = Q.items[index];
+          const answer = Q.answers[index];
+          return `<div class="missed">
+            <strong>Question ${index + 1}: ${esc(item.q)}</strong>
+            <p class="muted">${answer && Number.isInteger(answer.picked) ? `Your answer: ${esc(item.options[item.order[answer.picked]])}` : 'Left unanswered'}</p>
+          </div>`;
+        }).join('')}
+      </section>` : ''}`;
   }
 
   // ---------- study plan ----------
@@ -568,6 +787,8 @@
     const progress = blockCount ? Math.round(doneCount / blockCount * 100) : 0;
     return `<h1>Study plan</h1>
       <p class="muted">${plan.days_to_exam} days to your exam &middot; ${plan.study_day_count} study days &middot; ${hm(plan.total_minutes)} planned.${S.report && S.report.overall.answered === 0 ? ' Practise a little, then update the plan: it gets sharper with data.' : ''}</p>
+      ${S.planNotice ? `<div class="callout plan-notice">${esc(S.planNotice)}</div>` : ''}
+      ${S.planError ? `<div class="callout plan-error">${esc(S.planError)}</div>` : ''}
       ${plan.warnings.map((w) => `<div class="callout" style="margin-bottom:10px">${esc(w)}</div>`).join('')}
       <section class="card plan-progress" aria-label="Study plan completion">
         <div><strong>Plan progress</strong><span>${doneCount} complete · ${skippedCount} skipped · ${blockCount} total · ${progress}% complete</span></div>
@@ -589,13 +810,48 @@
       exam = $('#p-exam').value; hours = parseFloat($('#p-hours').value);
       days = [...document.querySelectorAll('[data-wd]')].filter((c) => c.checked).map((c) => Number(c.dataset.wd));
     }
-    S.planPrefs = { exam, hours, days };
-    store.set('az900.plan', JSON.stringify(S.planPrefs));
-    S.planError = null;
     try {
       const q = new URLSearchParams({ learner, exam_date: exam, hours_per_week: String(hours), days: days.join(','), today: isoToday() });
-      S.plan = await api(`/api/plan?${q}`);
-    } catch (e) { S.plan = null; S.planError = e.message; }
+      const nextPlan = await api(`/api/plan?${q}`);
+      const previousPlan = S.plan || S.previousPlan;
+      let preservedProgress = 0;
+      let clearedProgress = 0;
+      if (previousPlan) {
+        const checks = planChecks();
+        const oldKeys = previousPlan.days.flatMap((day) => day.blocks.map((block, index) =>
+          planBlockKey(previousPlan.exam, day.date, block, index)));
+        const newKeys = new Set(nextPlan.days.flatMap((day) => day.blocks.map((block, index) =>
+          planBlockKey(nextPlan.exam, day.date, block, index))));
+        const oldProgress = oldKeys.filter((key) => checks[key]
+          && (checks[key] === true || checks[key].status === 'done' || checks[key].status === 'skipped'));
+        const lostProgress = oldProgress.filter((key) => !newKeys.has(key));
+        preservedProgress = oldProgress.length - lostProgress.length;
+        clearedProgress = lostProgress.length;
+        if (lostProgress.length && !window.confirm(
+          `This plan changed. Progress on ${oldProgress.length - lostProgress.length} matching blocks will be kept; ${lostProgress.length} completed or skipped block${lostProgress.length === 1 ? '' : 's'} no longer match and will be cleared. Continue?`
+        )) {
+          S.planPrefs = { exam, hours, days };
+          render();
+          return;
+        }
+        if (lostProgress.length) {
+          oldProgress.filter((key) => !newKeys.has(key)).forEach((key) => delete checks[key]);
+          store.set('az900.planChecks', JSON.stringify(checks));
+        }
+      }
+      S.plan = nextPlan;
+      S.previousPlan = nextPlan;
+      store.set('az900.planSnapshot', JSON.stringify(nextPlan));
+      S.planPrefs = { exam, hours, days };
+      store.set('az900.plan', JSON.stringify(S.planPrefs));
+      S.planError = null;
+      S.planNotice = previousPlan && preservedProgress
+        ? `Kept progress on ${preservedProgress} matching block${preservedProgress === 1 ? '' : 's'}${clearedProgress ? `; reset ${clearedProgress} no-longer-matching block${clearedProgress === 1 ? '' : 's'}` : ''}.`
+        : null;
+    } catch (e) {
+      S.planError = e.message;
+      S.planPrefs = { exam, hours, days };
+    }
     render();
   }
 
@@ -618,6 +874,10 @@
   }
 
   async function go(view) {
+    if (view !== 'quiz' && S.view === 'quiz' && S.quiz) {
+      saveSession();
+      S.interrupted = loadSession();
+    }
     if (view !== 'quiz') { clearInterval(S.timer); S.timer = null; }
     S.view = view;
     if (view === 'dashboard') {
@@ -637,6 +897,7 @@
   }
 
   async function startQuiz(opts) {
+    if (S.interrupted && !window.confirm('Starting a new session will replace the in-progress session saved on this device. Continue?')) return;
     S.loading = true; render();
     try {
       const params = new URLSearchParams({ learner, mode: opts.mode, n: String(opts.n || 10) });
@@ -647,11 +908,13 @@
       if (!quiz.questions.length) { toast('No questions available for that choice.'); S.loading = false; S.view = 'practice'; render(); return; }
       S.quiz = {
         mode: opts.mode, items: quiz.questions.map((q) => ({ ...q, order: shuffle([0, 1, 2, 3]) })),
-        i: 0, picked: null, sure: true, answered: null, results: [], busy: false,
+        i: 0, picked: null, sure: true, answered: null, results: [], answers: Array(quiz.questions.length).fill(null), flags: Array(quiz.questions.length).fill(false), busy: false,
         before: before.overall.score, after: null, t0: Date.now(),
         deadline: opts.mode === 'exam' && opts.timed !== false ? Date.now() + 45 * 60 * 1000 : null,
       };
+      S.interrupted = null;
       S.view = 'quiz';
+      saveSession();
     } catch (e) { toast(e.message); S.view = 'practice'; }
     S.loading = false; render();
     if (S.view === 'quiz') startExamClock();
@@ -665,10 +928,11 @@
       S.quiz = {
         mode: 'retry',
         items: results.map((result) => ({ ...result.item, order: shuffle([0, 1, 2, 3]) })),
-        i: 0, picked: null, sure: true, answered: null, results: [], busy: false,
+        i: 0, picked: null, sure: true, answered: null, results: [], answers: Array(results.length).fill(null), flags: Array(results.length).fill(false), busy: false,
         before: before.overall.score, after: null, t0: Date.now(), deadline: null,
       };
       S.view = 'quiz';
+      saveSession();
     } catch (e) { toast(e.message); S.view = 'results'; }
     S.loading = false; render(); window.scrollTo({ top: 0 });
   }
@@ -678,6 +942,7 @@
     data.saved = savedIds();
     data.plan = S.planPrefs;
     data.planChecks = planChecks();
+    data.planSnapshot = S.plan || S.previousPlan;
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -712,6 +977,12 @@
     if (data.planChecks && typeof data.planChecks === 'object' && !Array.isArray(data.planChecks)) {
       store.set('az900.planChecks', JSON.stringify(data.planChecks));
     }
+    if (data.planSnapshot && Array.isArray(data.planSnapshot.days)
+      && typeof data.planSnapshot.exam === 'string') {
+      S.previousPlan = data.planSnapshot;
+      store.set('az900.planSnapshot', JSON.stringify(data.planSnapshot));
+    }
+    clearSavedSession();
     S.plan = null;
     toast(`Imported ${result.imported} answers`);
     await go('dashboard');
@@ -781,12 +1052,40 @@
         }
         case 'export': await exportData(); break;
         case 'import': $('#import-file').click(); break;
-        case 'pick': if (!Q.answered) { Q.picked = Number(el.dataset.k); render(); } break;
-        case 'conf': Q.sure = el.dataset.v === 'sure'; render(); break;
-        case 'submit': { const r = await submitAnswer(); if (r) render(); break; }
+        case 'resume-session': resumeSession(); break;
+        case 'discard-session': clearSavedSession(); render(); break;
+        case 'pick':
+          if (!Q.answered && !(Q.mode === 'exam' && Q.deadline && Date.now() >= Q.deadline)) {
+            Q.picked = Number(el.dataset.k);
+            if (Q.mode === 'exam') Q.answers[Q.i] = { picked: Q.picked, sure: Q.sure };
+            saveSession(); render(); app.querySelector('.opt.sel')?.focus();
+          }
+          break;
+        case 'conf':
+          Q.sure = el.dataset.v === 'sure';
+          if (Q.mode === 'exam') Q.answers[Q.i] = Q.picked === null ? null : { picked: Q.picked, sure: Q.sure };
+          saveSession(); render();
+          app.querySelector(`.seg [data-v="${Q.sure ? 'sure' : 'guess'}"]`)?.focus();
+          break;
+        case 'submit': { const r = await submitAnswer(); if (r) { render(); $('#feedback-title')?.focus(); } break; }
         case 'submit-next': { const r = await submitAnswer(); if (r) await advance(); break; }
-        case 'finish-exam': await finishQuiz(); break;
+        case 'finish-exam': await submitExam(); break;
         case 'next': await advance(); break;
+        case 'previous-question': moveExamQuestion(Q.i - 1); break;
+        case 'next-question':
+          Q.answers[Q.i] = Q.picked === null ? null : { picked: Q.picked, sure: Q.sure };
+          if (Q.i < Q.items.length - 1) moveExamQuestion(Q.i + 1);
+          else {
+            const firstFlagged = Q.flags.findIndex(Boolean);
+            const firstUnanswered = Q.answers.findIndex((answer) => !answer || !Number.isInteger(answer.picked));
+            const target = firstFlagged >= 0 ? firstFlagged : firstUnanswered >= 0 ? firstUnanswered : 0;
+            if (target !== Q.i) moveExamQuestion(target);
+            else { saveSession(); render(); $('.exam-nav-summary')?.focus(); }
+          }
+          break;
+        case 'go-question': moveExamQuestion(Number(el.dataset.index)); break;
+        case 'toggle-flag':
+          Q.flags[Q.i] = !Q.flags[Q.i]; saveSession(); render(); $('[data-act="toggle-flag"]')?.focus(); break;
         case 'explain': await explainNow(); break;
         case 'lang': S.lang = el.dataset.v; { const keep = $('#ai-out') ? $('#ai-out').innerHTML : ''; render(); if ($('#ai-out')) $('#ai-out').innerHTML = keep; } break;
         case 'quit': if (window.confirm('Quit this session? Answers you already gave are saved.')) { await go('dashboard'); } break;
@@ -794,18 +1093,24 @@
         case 'demo':
           if (!S.report || S.report.overall.answered === 0 || window.confirm('Replace your current history with demo data?')) {
             await api(`/api/demo/seed?learner=${learner}`, { method: 'POST' });
+            clearSavedSession();
             toast('Demo data loaded'); await go('dashboard');
           }
           break;
         case 'reset':
           if (window.confirm('Delete all your practice history from this tracker?')) {
             await api(`/api/learner/${learner}`, { method: 'DELETE' });
+            clearSavedSession();
             toast('History cleared'); await go('dashboard');
           }
           break;
         default: break;
       }
-    } catch (err) { S.loading = false; toast(err.message); render(); }
+    } catch (err) {
+      S.loading = false;
+      if (Q && S.view === 'quiz') { Q.error = err.message; saveSession(); }
+      toast(err.message); render();
+    }
   });
 
   document.addEventListener('keydown', (e) => {
@@ -813,9 +1118,15 @@
     if (e.target && /^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
     const Q = S.quiz;
     const idx = '1234'.indexOf(e.key) >= 0 ? '1234'.indexOf(e.key) : 'abcd'.indexOf(e.key.toLowerCase());
-    if (e.key.length === 1 && idx >= 0 && !Q.answered) { Q.picked = idx; render(); return; }
+    if (e.key.length === 1 && idx >= 0 && !Q.answered && !(Q.mode === 'exam' && Q.deadline && Date.now() >= Q.deadline)) {
+      Q.picked = idx;
+      if (Q.mode === 'exam') Q.answers[Q.i] = { picked: Q.picked, sure: Q.sure };
+      saveSession(); render(); app.querySelector('.opt.sel')?.focus(); return;
+    }
+    if (Q.mode === 'exam' && e.key === 'ArrowLeft') { e.preventDefault(); moveExamQuestion(Q.i - 1); return; }
+    if (Q.mode === 'exam' && e.key === 'ArrowRight') { e.preventDefault(); moveExamQuestion(Q.i + 1); return; }
     if (e.key === 'Enter') {
-      const btn = app.querySelector('[data-act="submit"],[data-act="submit-next"],[data-act="next"]');
+      const btn = app.querySelector('[data-act="submit"],[data-act="submit-next"],[data-act="next"],[data-act="next-question"],[data-act="finish-exam"]');
       if (btn && !btn.disabled && e.target.tagName !== 'BUTTON') { e.preventDefault(); btn.click(); }
     }
   });
