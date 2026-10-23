@@ -61,6 +61,25 @@ def test_learners_are_isolated_and_reset_works(client):
     assert client.get("/api/readiness", params={"learner": L}).json()["overall"]["answered"] == 0
 
 
+def test_export_import_round_trip_and_reject_unknown_question(client):
+    q = next(iter(load_bank().values()))
+    client.post("/api/answer", json={
+        "learner": L, "question_id": q.id, "choice": q.answer, "confidence": "guess",
+        "mode": "topic", "seconds": 12.5,
+    })
+    exported = client.get(f"/api/learner/{L}/export").json()
+    assert exported["format"] == "az900-readiness-tracker"
+    assert len(exported["attempts"]) == 1
+
+    other = "learner-test-02"
+    assert client.post(f"/api/learner/{other}/import", json=exported).json()["imported"] == 1
+    assert client.get("/api/readiness", params={"learner": other}).json()["overall"]["answered"] == 1
+    assert client.post(f"/api/learner/{other}/import", json={
+        "version": 1, "attempts": [{**exported["attempts"][0], "question_id": "missing"}],
+    }).status_code == 422
+    assert client.get("/api/readiness", params={"learner": other}).json()["overall"]["answered"] == 1
+
+
 def test_demo_seed_populates_dashboard(client):
     assert client.post("/api/demo/seed", params={"learner": L}).json()["seeded"] > 100
     rep = client.get("/api/readiness", params={"learner": L}).json()
@@ -72,6 +91,18 @@ def test_demo_seed_populates_dashboard(client):
 def test_exam_mode_returns_forty(client):
     data = client.get("/api/quiz", params={"learner": L, "mode": "exam"}).json()
     assert len(data["questions"]) == 40
+
+
+def test_saved_question_mode_returns_only_requested_questions(client):
+    q = next(iter(load_bank().values()))
+    response = client.get("/api/quiz", params={
+        "learner": L, "mode": "saved", "n": 1, "question_ids": [q.id],
+    })
+    assert response.status_code == 200
+    assert [item["id"] for item in response.json()["questions"]] == [q.id]
+    assert client.get("/api/quiz", params={
+        "learner": L, "mode": "saved", "question_ids": ["unknown"],
+    }).status_code == 422
 
 
 def test_explain_falls_back_without_api_key(client):

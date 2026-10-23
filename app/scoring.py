@@ -211,5 +211,10 @@ def history(attempts: list[Attempt], now: float | None = None, days: int = 14, t
         if not seen:
             continue
         r = readiness(seen, now=end)
-        out.append({"date": day.isoformat(), "score": r["overall"]["score"], "answered": len(seen)})
+        start = datetime(day.year, day.month, day.day, tzinfo=tz).timestamp()
+        daily = sum(1 for a in attempts if start <= a.ts <= end)
+        out.append({
+            "date": day.isoformat(), "score": r["overall"]["score"],
+            "answered": len(seen), "activity": daily,
+        })
     return out

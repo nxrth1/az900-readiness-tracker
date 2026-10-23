@@ -85,6 +85,28 @@ def add_attempts_bulk(rows: list[tuple]) -> None:
         )
 
 
+def replace_attempts(learner: str, rows: list[tuple]) -> int:
+    """Replace one learner's history atomically."""
+    with connect() as c:
+        deleted = c.execute("DELETE FROM attempts WHERE learner_id = ?", (learner,)).rowcount
+        c.executemany(
+            "INSERT INTO attempts (learner_id, question_id, topic, chosen, correct, confidence, mode, seconds, ts)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            rows,
+        )
+    return deleted
+
+
+def get_attempt_records(learner: str) -> list[dict]:
+    with connect() as c:
+        rows = c.execute(
+            "SELECT question_id, chosen AS choice, confidence, mode, seconds, ts"
+            " FROM attempts WHERE learner_id = ? ORDER BY ts",
+            (learner,),
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
 def get_attempts(learner: str) -> list[Attempt]:
     bank = load_bank()
     with connect() as c:

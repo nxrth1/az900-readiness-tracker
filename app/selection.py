@@ -30,6 +30,7 @@ def pick_questions(
     n: int = 10,
     domain: str | None = None,
     topic: str | None = None,
+    question_ids: list[str] | None = None,
     rng: random.Random | None = None,
 ) -> list[Question]:
     rng = rng or random.Random()
@@ -38,6 +39,9 @@ def pick_questions(
         pool = [q for q in pool if q.topic == topic]
     elif mode == "domain":
         pool = [q for q in pool if q.domain == domain]
+    elif mode == "saved":
+        saved = set(question_ids or [])
+        pool = [q for q in pool if q.id in saved]
     if not pool:
         return []
 

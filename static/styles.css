@@ -1706,3 +1706,212 @@ select {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Learning loop enhancements */
+.hero .next-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 1px solid rgba(235, 242, 230, 0.16);
+  border-radius: 14px;
+  background: rgba(245, 247, 237, 0.07);
+}
+.next-step > div {
+  display: grid;
+  gap: 3px;
+}
+.next-step small {
+  color: #b9d8c2;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.next-step strong {
+  color: #fffef7;
+  font-size: 0.95rem;
+}
+.next-step span {
+  color: #c8d7ce;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.next-step .btn {
+  flex: none;
+}
+.tile .evidence {
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.2;
+  opacity: 0.82;
+}
+.activity-title {
+  margin: 18px 0 2px;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: 0;
+}
+.activity {
+  display: flex;
+  align-items: end;
+  gap: clamp(8px, 2vw, 17px);
+  min-height: 68px;
+  padding-top: 7px;
+}
+.activity-day {
+  display: grid;
+  flex: 1;
+  justify-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+.activity-count,
+.activity-day small {
+  color: var(--muted);
+  font-size: 0.65rem;
+  line-height: 1;
+}
+.activity-day i {
+  display: block;
+  width: min(100%, 24px);
+  min-height: 5px;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(180deg, #73a979, #176b59);
+}
+.practice-options {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 18px;
+  padding: 14px 18px;
+}
+.practice-options label {
+  font-weight: 700;
+}
+.practice-options .muted {
+  font-size: 0.78rem;
+}
+.mode .timer-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: auto 0 2px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.timer-choice input {
+  accent-color: var(--teal);
+}
+.saved-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+.saved-panel h2 {
+  margin-bottom: 3px;
+}
+.saved-panel p {
+  margin: 0;
+}
+.exam-clock {
+  flex: none;
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--card);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+.exam-clock.urgent {
+  border-color: var(--clay);
+  background: var(--clay-soft);
+  color: var(--clay);
+}
+.timer-expired {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--clay-soft);
+  color: var(--clay);
+  font-weight: 650;
+}
+.save-question {
+  white-space: nowrap;
+}
+.plan-progress {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+}
+.plan-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.plan-progress span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.plan-progress .meter {
+  overflow: hidden;
+}
+.pblock-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.pblock-actions .btn {
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+}
+.pblock.completed .pn strong {
+  text-decoration: line-through;
+  text-decoration-color: var(--teal);
+}
+.pblock.completed .pt {
+  background: var(--teal);
+  color: #fff;
+}
+.completion-toggle[aria-pressed="true"] {
+  color: var(--teal);
+}
+.missed .btn {
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .hero .next-step,
+  .saved-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .next-step .btn {
+    align-self: flex-start;
+  }
+  .practice-options {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .qhead .save-question {
+    min-height: 34px;
+    padding: 5px 8px;
+  }
+  .plan-progress > div:first-child {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .pblock-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}

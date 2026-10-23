@@ -52,7 +52,7 @@ class AnswerIn(BaseModel):
     question_id: str
     choice: int = Field(ge=0, le=3)
     confidence: Literal["sure", "guess"] = "sure"
-    mode: Literal["adaptive", "topic", "domain", "exam", "practice"] = "practice"
+    mode: Literal["adaptive", "topic", "domain", "exam", "practice", "saved"] = "practice"
     seconds: float | None = Field(default=None, ge=0, le=3600)
 
 
@@ -61,6 +61,20 @@ class ExplainIn(BaseModel):
     choice: int = Field(ge=0, le=3)
     style: Literal["simple", "exam-tip"] = "simple"
     language: Literal["en", "sw"] = "en"
+
+
+class ImportAttempt(BaseModel):
+    question_id: str
+    choice: int = Field(ge=0, le=3)
+    confidence: Literal["sure", "guess"]
+    mode: Literal["adaptive", "topic", "domain", "exam", "practice", "saved"] = "practice"
+    seconds: float | None = Field(default=None, ge=0, le=3600)
+    ts: float = Field(ge=0)
+
+
+class ImportIn(BaseModel):
+    version: Literal[1]
+    attempts: list[ImportAttempt] = Field(max_length=10000)
 
 
 @app.get("/api/health")
@@ -95,21 +109,28 @@ def meta() -> dict:
 @app.get("/api/quiz")
 def quiz(
     learner: str,
-    mode: Literal["adaptive", "topic", "domain", "exam"] = "adaptive",
+    mode: Literal["adaptive", "topic", "domain", "exam", "saved"] = "adaptive",
     n: int = Query(default=10, ge=1, le=EXAM_SIZE),
     domain: str | None = None,
     topic: str | None = None,
+    question_ids: list[str] | None = Query(default=None),
 ) -> dict:
     learner = _learner(learner)
     if mode == "topic" and topic not in TOPIC_NAMES:
         raise HTTPException(status_code=422, detail="unknown topic")
     if mode == "domain" and domain not in DOMAINS:
         raise HTTPException(status_code=422, detail="unknown domain")
+    if mode == "saved":
+        bank_ids = load_bank()
+        if not question_ids:
+            raise HTTPException(status_code=422, detail="saved mode requires question_ids")
+        if any(question_id not in bank_ids for question_id in question_ids):
+            raise HTTPException(status_code=422, detail="saved questions include an unknown question")
     if mode == "exam":
         n = EXAM_SIZE
     questions = pick_questions(
         load_bank(), db.get_attempts(learner), time.time(), mode=mode, n=n,
-        domain=domain, topic=topic, rng=random.Random(),
+        domain=domain, topic=topic, question_ids=question_ids, rng=random.Random(),
     )
     return {"mode": mode, "questions": [q.public() for q in questions]}
 
@@ -184,6 +205,29 @@ def seed_demo(learner: str) -> dict:
 def reset(learner: str) -> dict:
     learner = _learner(learner)
     return {"deleted": db.clear_learner(learner)}
+
+
+@app.get("/api/learner/{learner}/export")
+def export_learner(learner: str) -> dict:
+    learner = _learner(learner)
+    return {"format": "az900-readiness-tracker", "version": 1, "attempts": db.get_attempt_records(learner)}
+
+
+@app.post("/api/learner/{learner}/import")
+def import_learner(learner: str, body: ImportIn) -> dict:
+    learner = _learner(learner)
+    bank = load_bank()
+    rows = []
+    for attempt in body.attempts:
+        question = bank.get(attempt.question_id)
+        if question is None:
+            raise HTTPException(status_code=422, detail=f"unknown question in import: {attempt.question_id}")
+        rows.append((
+            learner, question.id, question.topic, attempt.choice, int(attempt.choice == question.answer),
+            attempt.confidence, attempt.mode, attempt.seconds, attempt.ts,
+        ))
+    deleted = db.replace_attempts(learner, rows)
+    return {"imported": len(rows), "replaced": deleted}
 
 
 @app.get("/", include_in_schema=False)

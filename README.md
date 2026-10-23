@@ -18,8 +18,11 @@ Built for the **#1MillionDevs Vibe Coding Hackathon: AZ-900 Exam Prep Edition** 
 - **Tells you where the points are.** "Biggest wins next" ranks topics by how many exam points you would gain by reaching 80%.
 - **Forgetting is modelled.** Evidence fades with a 10-day half-life, so a topic you have not touched in weeks drifts back toward uncertainty.
 - **Smart review (spaced repetition).** Picks questions from high-value weak topics, brings back anything you got wrong, and rests things you just got right.
-- **Exam-date study planner.** Give it your exam date, hours per week and study days. It builds a day-by-day schedule that puts time where it raises your score most, interleaves topics, adds a mock exam about a week out, and keeps the final day to light review of your weak spots and confident mistakes. Rebuild it any time as your readiness changes.
-- **Mock exam.** 40 questions sampled by exam weight, no feedback until the end, then a full review.
+- **Flexible practice and saved questions.** Choose a short or longer session, drill a domain or topic, save questions for later, and retry misses immediately from your results.
+- **Exam-date study planner.** Give it your exam date, hours per week and study days. It builds a day-by-day schedule that puts time where it raises your score most, interleaves topics, adds a mock exam about a week out, and keeps the final day to light review of your weak spots and confident mistakes. Mark blocks done or skipped, move them to another day, and track completion.
+- **Mock exam.** 40 questions sampled by exam weight, no feedback until the end, then a domain breakdown and review of every miss. An optional 45-minute timer helps you practise under time pressure.
+- **Portable learner data.** Download a JSON backup with practice history, saved questions and planner progress, then import it on another browser. Import replaces the current practice history after confirmation.
+- **Accessible progress views.** Topic status includes an evidence label as well as colour, and the dashboard includes recent practice activity.
 - **Explain it simply (optional, Claude).** Re-explains a question in plain English or Kiswahili with an everyday East African analogy, grounded in the curated explanation so it cannot invent facts. See [docs/PROMPTS.md](docs/PROMPTS.md).
 
 ## Quick start
@@ -110,6 +113,8 @@ SQLite keeps setup to zero. The queries are plain SQL, so moving to Postgres or 
 | POST | `/api/explain` | Claude explanation (or built-in fallback) |
 | POST | `/api/demo/seed?learner=` | Load a deterministic demo history |
 | DELETE | `/api/learner/{id}` | Delete a learner's history |
+| GET | `/api/learner/{id}/export` | Export practice attempts as JSON |
+| POST | `/api/learner/{id}/import` | Validate and replace practice attempts from a JSON backup |
 
 Interactive docs at `/docs`. Learners are anonymous random IDs stored in the browser; there is no login.
 

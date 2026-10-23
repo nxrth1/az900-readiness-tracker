@@ -117,3 +117,10 @@ def test_history_is_chronological_and_improves_with_practice():
 
 def test_history_empty_for_no_attempts():
     assert history([], NOW) == []
+
+
+def test_history_reports_answers_per_study_day():
+    attempts = [att(qid="first", age_days=0.1), att(qid="second", age_days=0.1)]
+    h = history(attempts, NOW)
+    assert len(h) == 1
+    assert h[0]["activity"] == 2
