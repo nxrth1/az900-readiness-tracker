@@ -5,6 +5,16 @@
   // ---------- helpers ----------
   const $ = (sel, el = document) => el.querySelector(sel);
   const app = $('#app');
+  const icon = (name, className = '') => {
+    const paths = {
+      arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+      check: '<path d="m5 12 4 4L19 6"/>',
+      chart: '<path d="M4 19V5M4 19h16M8 15v-3m5 3V8m5 7v-5"/>',
+      target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m16.5 7.5 4-4"/>',
+      calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-9 4h.01M15 14h.01M11 17h.01"/>',
+    };
+    return `<svg class="icon${className ? ` ${className}` : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name]}</svg>`;
+  };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pct = (v) => `${Math.round(v * 100)}%`;
   const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
@@ -298,18 +308,46 @@
   function renderDashboard() {
     const r = S.report; const o = r.overall;
     if (o.answered === 0) {
+      const blueprint = S.meta.domains.map((domain, index) => `
+        <li class="blueprint-row">
+          <span class="blueprint-index">${String(index + 1).padStart(2, '0')}</span>
+          <div class="blueprint-detail">
+            <strong>${esc(domain.name)}</strong>
+            <span>${domain.topics.length} topics to explore</span>
+          </div>
+          <span class="blueprint-weight">${Math.round(domain.weight * 100)}%</span>
+          <i class="blueprint-bar" style="--weight:${Math.round(domain.weight * 100)}%"></i>
+        </li>`).join('');
       return `
         ${interruptedSessionCard()}
-        <div class="card empty">
-          <h1>See how ready you really are</h1>
-          <p>Answer practice questions and this page turns them into an honest estimate of your AZ-900 score, broken down by exam domain and topic, with the next best thing to study.</p>
-          <div class="row" style="justify-content:center">
-            <button class="btn primary" data-act="start-adaptive">Start practising</button>
-            <button class="btn" data-act="demo">Load demo data</button>
-            <button class="btn" data-act="import">Import backup</button>
-            <input id="import-file" type="file" accept="application/json,.json" hidden>
+        <section class="welcome">
+          <div class="welcome-copy">
+            <span class="eyebrow"><i></i> AZ-900 exam preparation</span>
+            <h1>Get ready for your next step.</h1>
+            <p>Practice original questions, see which topics need more attention, and build a study plan that fits your exam date.</p>
+            <div class="welcome-actions">
+              <button class="btn primary" data-act="start-adaptive">Start practising ${icon('arrow')}</button>
+              <button class="btn quiet" data-act="demo">Try the demo</button>
+              <button class="btn quiet" data-act="import">Import a backup</button>
+              <input id="import-file" type="file" accept="application/json,.json" hidden>
+            </div>
+            <div class="welcome-note">${icon('check')} Original questions · progress saved on this device</div>
           </div>
-        </div>`;
+          <aside class="blueprint-card" aria-label="AZ-900 exam blueprint">
+            <div class="blueprint-head">
+              <div><span class="eyebrow">A quick overview</span><h2>Exam blueprint</h2></div>
+              <span class="blueprint-count">3 domains</span>
+            </div>
+            <div class="blueprint-total"><strong>${S.meta.total_questions}</strong><span>original practice questions<br>across the exam domains</span></div>
+            <ol class="blueprint-list">${blueprint}</ol>
+            <div class="blueprint-foot"><span>Weighted like the AZ-900 skills outline</span>${icon('arrow')}</div>
+          </aside>
+        </section>
+        <section class="welcome-features" aria-label="How the tracker helps">
+          <article><span class="feature-icon">${icon('chart')}</span><div><h2>Track your readiness</h2><p>See your progress by exam domain and topic.</p></div></article>
+          <article><span class="feature-icon">${icon('target')}</span><div><h2>Focus your practice</h2><p>Spend time on the subjects that need it.</p></div></article>
+          <article><span class="feature-icon">${icon('calendar')}</span><div><h2>Plan your study</h2><p>Turn your exam date into a realistic schedule.</p></div></article>
+        </section>`;
     }
     const reliable = r.topics.filter((t) => t.coverage >= 1).length;
     const lead = o.status === 'start'
@@ -373,8 +411,11 @@
     const domainOpts = m.domains.map((d) => `<option value="${esc(d.id)}">${esc(d.name)}</option>`).join('');
     const topicOpts = m.domains.map((d) => `<optgroup label="${esc(d.name)}">${d.topics.map((t) => `<option value="${esc(t.id)}">${esc(t.name)} (${t.questions})</option>`).join('')}</optgroup>`).join('');
     return `
-      <h1>Practice</h1>
-      <p class="muted">${m.total_questions} original questions across the three exam domains. After every answer you can mark how sure you were; the tracker uses that to tell lucky guesses from real knowledge.</p>
+      <header class="page-heading">
+        <span class="eyebrow"><i></i> Build your confidence</span>
+        <h1>Practice, your way.</h1>
+        <p>${m.total_questions} original questions across the three exam domains. Choose a quick review, focus on one topic, or take a full mock exam.</p>
+      </header>
       ${interruptedSessionCard()}
       <div class="practice-options card">
         <label for="practice-count">Questions per session</label>
@@ -720,8 +761,11 @@
         <button class="btn primary" type="submit">${plan ? 'Update plan' : 'Build my plan'}</button>
       </form>`;
     if (!plan) {
-      return `<h1>Study plan</h1>
-        <p class="muted">Tell me your exam date and how much time you have. I'll put your time where it raises your estimated score the most, add a mock exam about a week out, and keep the last day light.</p>
+      return `<header class="page-heading">
+          <span class="eyebrow"><i></i> Make time for what matters</span>
+          <h1>A study plan that fits.</h1>
+          <p>Set your exam date and weekly study time. Your plan will focus on high-impact topics, include a mock exam, and leave room to review.</p>
+        </header>
         ${form}${S.planError ? `<div class="callout" style="margin-top:14px">${esc(S.planError)}</div>` : ''}`;
     }
     const checks = planChecks();
@@ -785,8 +829,11 @@
         </div>`).join('')}`;
     }).join('');
     const progress = blockCount ? Math.round(doneCount / blockCount * 100) : 0;
-    return `<h1>Study plan</h1>
-      <p class="muted">${plan.days_to_exam} days to your exam &middot; ${plan.study_day_count} study days &middot; ${hm(plan.total_minutes)} planned.${S.report && S.report.overall.answered === 0 ? ' Practise a little, then update the plan: it gets sharper with data.' : ''}</p>
+    return `<header class="page-heading">
+        <span class="eyebrow"><i></i> Make time for what matters</span>
+        <h1>Your study plan.</h1>
+        <p>${plan.days_to_exam} days to your exam · ${plan.study_day_count} study days · ${hm(plan.total_minutes)} planned.${S.report && S.report.overall.answered === 0 ? ' Practise a little, then update the plan: it gets sharper with data.' : ''}</p>
+      </header>
       ${S.planNotice ? `<div class="callout plan-notice">${esc(S.planNotice)}</div>` : ''}
       ${S.planError ? `<div class="callout plan-error">${esc(S.planError)}</div>` : ''}
       ${plan.warnings.map((w) => `<div class="callout" style="margin-bottom:10px">${esc(w)}</div>`).join('')}
