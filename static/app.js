@@ -12,6 +12,11 @@
       chart: '<path d="M4 19V5M4 19h16M8 15v-3m5 3V8m5 7v-5"/>',
       target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="m16.5 7.5 4-4"/>',
       calendar: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-9 4h.01M15 14h.01M11 17h.01"/>',
+      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+      balance: '<path d="M12 3v17m-7 0h14M5 7h14M7 7l-4 7h8L7 7zm10 0-4 7h8l-4-7z"/>',
+      server: '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 17.5h.01m4-10h6m-6 10h6"/>',
+      cache: '<path d="M12 3 4 7l8 4 8-4-8-4zM4 12l8 4 8-4M4 17l8 4 8-4"/>',
+      database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>',
     };
     return `<svg class="icon${className ? ` ${className}` : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name]}</svg>`;
   };
@@ -290,6 +295,94 @@
       </div>
       <p class="muted">New-question accuracy better reflects recall than repeats. Confidence is useful when compared with correctness; a small sample can swing these percentages.</p>
     </section>`;
+  }
+
+  function renderLearningPath() {
+    const topicMeta = new Map(S.meta.domains.flatMap((domain) =>
+      domain.topics.map((topic) => [topic.id, { ...topic, domainName: domain.name, weight: domain.weight / domain.topics.length }])));
+    const topics = S.report.topics.map((topic) => {
+      const meta = topicMeta.get(topic.id);
+      const priority = meta.weight * (1 - topic.score) * (1 + 0.65 * (1 - topic.coverage));
+      const evidence = topic.answered === 0 ? 'Not practised'
+        : topic.coverage < 0.5 ? 'Early evidence'
+          : topic.coverage < 1 ? 'Building confidence' : 'Solid evidence';
+      return { ...topic, ...meta, priority, evidence };
+    }).sort((a, b) => b.priority - a.priority);
+    const steps = topics.map((topic, index) => `
+      <li class="path-step">
+        <span class="path-number">${String(index + 1).padStart(2, '0')}</span>
+        <div class="path-topic">
+          <span class="path-domain">${esc(topic.domainName)}</span>
+          <strong>${esc(topic.name)}</strong>
+          <div class="path-evidence"><span>${topic.answered ? `${topic.answered} answer${topic.answered === 1 ? '' : 's'}` : 'Ready when you are'}</span><span>${topic.evidence}</span></div>
+          <div class="path-meter" role="img" aria-label="${esc(topic.name)} estimated mastery ${pct(topic.score)}"><i style="width:${Math.round(topic.score * 100)}%"></i></div>
+        </div>
+        <span class="path-score">${pct(topic.score)}</span>
+        <button class="btn path-action" data-act="start-topic" data-topic="${esc(topic.id)}">Practise</button>
+      </li>`).join('');
+    const practiced = topics.filter((topic) => topic.answered > 0).length;
+    return `
+      <header class="page-heading">
+        <span class="eyebrow"><i></i> A route through the exam</span>
+        <h1>Your learning path.</h1>
+        <p>This path adapts to your practice. Topics with the biggest readiness gaps and least evidence rise to the top.</p>
+      </header>
+      <section class="card path-card" aria-labelledby="learning-path-title">
+        <div class="path-heading">
+          <div><span class="eyebrow">Recommended next steps</span><h2 id="learning-path-title">Study in priority order</h2></div>
+          <span class="path-count">${practiced} of ${topics.length} topics practised</span>
+        </div>
+        <ol class="path-list">${steps}</ol>
+        <p class="path-footnote">Order is estimated from exam weighting, topic performance and evidence coverage. It updates as you answer questions.</p>
+      </section>
+      <section class="architecture-section" aria-labelledby="architecture-title">
+        <header class="page-heading">
+          <span class="eyebrow"><i></i> Azure architecture concept</span>
+          <h2 id="architecture-title">Where do load balancing and caching fit?</h2>
+          <p>A simple web-app pattern: distribute incoming requests, serve them from healthy app instances, and avoid repeating expensive data reads.</p>
+        </header>
+        <div class="card architecture-card">
+          <div class="architecture-flow" role="img" aria-label="Web users send requests through Azure Load Balancer to healthy application instances. The application checks an in-memory cache first and reads the database when data is not cached.">
+            <div class="architecture-node">
+              <span class="architecture-icon">${icon('users')}</span>
+              <strong>Web users</strong>
+              <span>Requests arrive</span>
+            </div>
+            <span class="architecture-link" aria-hidden="true"></span>
+            <div class="architecture-node load-balancer">
+              <span class="architecture-icon">${icon('balance')}</span>
+              <strong>Azure Load Balancer</strong>
+              <span>Spreads network traffic across healthy instances</span>
+              <small>Layer 4 · TCP / UDP</small>
+            </div>
+            <span class="architecture-link" aria-hidden="true"></span>
+            <div class="architecture-node">
+              <span class="architecture-icon">${icon('server')}</span>
+              <strong>Application instances</strong>
+              <span>Run the web app; scale out as demand grows</span>
+            </div>
+          </div>
+          <div class="architecture-dataflow">
+            <div class="architecture-app-link"><span></span><small>checks for frequently used data</small></div>
+            <div class="architecture-data-nodes">
+              <article class="architecture-node cache-node">
+                <span class="architecture-icon">${icon('cache')}</span>
+                <strong>In-memory cache</strong>
+                <span>Fast answers for data used often</span>
+                <small>Cache hit → return data quickly</small>
+              </article>
+              <div class="cache-miss"><span>On cache miss</span><i aria-hidden="true"></i></div>
+              <article class="architecture-node database-node">
+                <span class="architecture-icon">${icon('database')}</span>
+                <strong>Database</strong>
+                <span>Durable source of truth</span>
+                <small>Read data, then refresh the cache</small>
+              </article>
+            </div>
+          </div>
+          <p class="architecture-note"><strong>Key idea:</strong> the load balancer distributes traffic; the cache reduces repeated database reads. They solve different problems and are optional design choices, not required parts of every Azure app.</p>
+        </div>
+      </section>`;
   }
 
   function winsList(r) {
@@ -905,7 +998,7 @@
   // ---------- render + routing ----------
   function render() {
     document.querySelectorAll('.nav').forEach((b) => {
-      const on = (S.view === 'dashboard' && b.dataset.nav === 'dashboard') || (S.view === 'plan' && b.dataset.nav === 'plan') || ((S.view === 'practice' || S.view === 'quiz' || S.view === 'results') && b.dataset.nav === 'practice');
+      const on = (S.view === 'dashboard' && b.dataset.nav === 'dashboard') || (S.view === 'learn' && b.dataset.nav === 'learn') || (S.view === 'plan' && b.dataset.nav === 'plan') || ((S.view === 'practice' || S.view === 'quiz' || S.view === 'results') && b.dataset.nav === 'practice');
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     if (S.loading) { app.innerHTML = '<p class="muted">Loading&hellip;</p>'; return; }
@@ -914,6 +1007,7 @@
     else if (S.view === 'quiz') app.innerHTML = renderQuiz();
     else if (S.view === 'results') app.innerHTML = renderResults();
     else if (S.view === 'plan') app.innerHTML = renderPlan();
+    else if (S.view === 'learn') app.innerHTML = S.report && S.meta ? renderLearningPath() : '<p class="muted">Loading&hellip;</p>';
   }
 
   async function loadReport() {
@@ -927,7 +1021,7 @@
     }
     if (view !== 'quiz') { clearInterval(S.timer); S.timer = null; }
     S.view = view;
-    if (view === 'dashboard') {
+    if (view === 'dashboard' || view === 'learn') {
       try { await loadReport(); } catch (e) { toast(e.message); }
     }
     if (view === 'plan') {
