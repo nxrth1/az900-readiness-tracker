@@ -1497,7 +1497,7 @@ select {
   margin-bottom: 8px;
 }
 .pblock {
-  grid-template-columns: 78px minmax(0, 1fr) auto auto;
+  grid-template-columns: 78px minmax(0, 1fr) auto;
   gap: 12px;
   padding: 10px 0;
   border-color: #edf0ea;
@@ -2284,7 +2284,6 @@ h3 {
   select,
   .planform input[type="date"],
   .planform input[type="number"],
-  .chk,
   .pday,
   .opt {
     background-color: #1b2923;
@@ -2496,7 +2495,8 @@ h3 {
 .pblock-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  grid-column: 2 / -1;
+  justify-content: flex-start;
   gap: 4px;
 }
 .pblock-actions .btn {

@@ -6,13 +6,13 @@
  *
  * Bump VERSION whenever the ?v= on the assets in index.html changes (a test enforces that they match).
  */
-const VERSION = 'az900-v9';
+const VERSION = 'az900-v10';
 const SHELL = [
   '/',
   '/privacy',
-  '/static/styles.css?v=9',
-  '/static/app.js?v=9',
-  '/static/pwa.js?v=9',
+  '/static/styles.css?v=10',
+  '/static/app.js?v=10',
+  '/static/pwa.js?v=10',
   '/static/manifest.webmanifest',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
