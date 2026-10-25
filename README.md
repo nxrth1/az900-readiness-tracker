@@ -66,6 +66,30 @@ The image installs the exact versions in `requirements.lock`, runs as an unprivi
 logs JSON lines, and has a built-in health check. Use `/api/ready` as the platform readiness probe (it checks the
 database); `/api/health` is liveness only.
 
+### Android APK release
+
+This repo now includes a very small Android wrapper under [`android/`](android/) that loads the public backend URL in a `WebView`. It is designed to be built in GitHub Actions and uploaded as a signed release APK.
+
+Workflow: [`.github/workflows/android-release.yml`](.github/workflows/android-release.yml)
+
+- Manual run: GitHub → Actions → **Android release** → **Run workflow**
+- Tag release: push a tag such as `v1.0.0` to trigger automatic APK creation and attach it to a GitHub Release
+- Override backend URL: set the workflow input `backend_url` or edit the default in the workflow
+- The release build requires a signing key. Create it once and keep a secure backup:
+
+  ```powershell
+  keytool -genkeypair -v -keystore release-key.jks -alias az900-tracker -keyalg RSA -keysize 2048 -validity 10000
+  [Convert]::ToBase64String([IO.File]::ReadAllBytes("release-key.jks")) | Set-Clipboard
+  ```
+
+- In GitHub, open **Settings → Secrets and variables → Actions** and add these repository secrets:
+  `ANDROID_KEYSTORE_BASE64` (the clipboard value), `ANDROID_KEYSTORE_PASSWORD`,
+  `ANDROID_KEY_ALIAS` (for example, `az900-tracker`), and `ANDROID_KEY_PASSWORD`.
+- Never commit the keystore or its passwords. The keystore is ignored by Git; losing it means future APKs cannot update installs signed with the old key.
+- The workflow fails with a clear error if signing secrets are missing and only accepts an HTTPS backend URL.
+
+The wrapper loads the configured backend URL (default is the public Render URL) and keeps the app in a single `WebView` for a stable APK packaging flow.
+
 ### Public demo on Render
 
 This repository includes a Render Blueprint for deploying the app as a Docker web service. To create a public demo, push the repository to GitHub, sign in to Render, choose **New → Blueprint**, and connect this repository. Render reads `render.yaml` and builds the app; the health check uses `/api/ready`, and `TRUSTED_PROXY_HOPS=1` makes per-client rate limits see real client addresses behind Render's proxy.

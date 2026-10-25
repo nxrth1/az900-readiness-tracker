@@ -1,0 +1,70 @@
+plugins {
+    id 'com.android.application'
+}
+
+def backendUrl = System.getenv('AZ900_BACKEND_URL') ?: project.findProperty('AZ900_BACKEND_URL') ?: 'https://az900-readiness-tracker.onrender.com'
+def escapedBackendUrl = backendUrl.replace('\\', '\\\\').replace('"', '\\"')
+
+def signingEnvironment = [
+        keystorePath: System.getenv('ANDROID_KEYSTORE_PATH'),
+        keystorePassword: System.getenv('ANDROID_KEYSTORE_PASSWORD'),
+        keyAlias: System.getenv('ANDROID_KEY_ALIAS'),
+        keyPassword: System.getenv('ANDROID_KEY_PASSWORD')
+]
+def hasSigningCredentials = signingEnvironment.values().every { it }
+def buildingRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+
+if (buildingRelease && !hasSigningCredentials) {
+    throw new GradleException('Release builds require ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD.')
+}
+
+android {
+    namespace 'com.az900tracker'
+    compileSdk 34
+
+    signingConfigs {
+        release {
+            if (hasSigningCredentials) {
+                storeFile file(signingEnvironment.keystorePath)
+                storePassword signingEnvironment.keystorePassword
+                keyAlias signingEnvironment.keyAlias
+                keyPassword signingEnvironment.keyPassword
+            }
+        }
+    }
+
+    defaultConfig {
+        applicationId 'com.az900tracker'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+        buildConfigField 'String', 'AZ900_BACKEND_URL', "\"${escapedBackendUrl}\""
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
