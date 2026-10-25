@@ -3647,6 +3647,43 @@ nav {
   color: #31445d;
 }
 
+.architecture-exam-note {
+  margin: 10px 0 0;
+  color: #62738a;
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.architecture-exam-note strong {
+  color: #334a67;
+}
+
+.architecture-scenario {
+  margin-top: 12px;
+  padding: 13px 15px;
+  border: 1px solid #e5eaf1;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.architecture-scenario summary {
+  color: #334a67;
+  cursor: pointer;
+  font-size: 0.79rem;
+  font-weight: 680;
+}
+
+.architecture-scenario summary::marker {
+  color: #b18228;
+}
+
+.architecture-scenario p {
+  margin: 10px 0 0;
+  color: #62738a;
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
 @media (max-width: 800px) {
   .architecture-flow {
     grid-template-columns: 1fr;

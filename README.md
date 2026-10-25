@@ -25,6 +25,8 @@ Built for the **#1MillionDevs Vibe Coding Hackathon: AZ-900 Exam Prep Edition** 
 - **Portable learner data.** Download a JSON backup with practice history, saved questions and planner progress, then import it on another browser. Import replaces the current practice history after confirmation.
 - **Accessible progress views.** Topic status includes an evidence label as well as colour, and the dashboard includes recent practice activity.
 - **Learning insights.** See first-attempt accuracy separately from repeat attempts, plus accuracy for answers marked sure versus guesses.
+- **Adaptive learning path.** The Learn view orders exam topics using readiness gaps, exam weighting and evidence coverage. With no history, it starts with the exam domains in a sensible foundation-first order.
+- **Azure architecture explainer.** A responsive diagram shows how a load balancer, application instances, cache and database fit together, with a practical cache-miss scenario.
 - **Explain it simply (optional, Claude).** Re-explains a question in plain English or Kiswahili with an everyday East African analogy, grounded in the curated explanation so it cannot invent facts. See [docs/PROMPTS.md](docs/PROMPTS.md).
 
 ## Quick start

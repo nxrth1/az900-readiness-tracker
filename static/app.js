@@ -300,14 +300,18 @@
   function renderLearningPath() {
     const topicMeta = new Map(S.meta.domains.flatMap((domain) =>
       domain.topics.map((topic) => [topic.id, { ...topic, domainName: domain.name, weight: domain.weight / domain.topics.length }])));
+    const initialOrder = new Map(S.meta.domains.flatMap((domain) =>
+      domain.topics.map((topic, index) => [topic.id, S.meta.domains.indexOf(domain) * 100 + index])));
     const topics = S.report.topics.map((topic) => {
       const meta = topicMeta.get(topic.id);
       const priority = meta.weight * (1 - topic.score) * (1 + 0.65 * (1 - topic.coverage));
       const evidence = topic.answered === 0 ? 'Not practised'
         : topic.coverage < 0.5 ? 'Early evidence'
           : topic.coverage < 1 ? 'Building confidence' : 'Solid evidence';
-      return { ...topic, ...meta, priority, evidence };
-    }).sort((a, b) => b.priority - a.priority);
+      return { ...topic, ...meta, priority, evidence, initialOrder: initialOrder.get(topic.id) };
+    }).sort((a, b) => S.report.overall.answered > 0
+      ? b.priority - a.priority || a.initialOrder - b.initialOrder
+      : a.initialOrder - b.initialOrder);
     const steps = topics.map((topic, index) => `
       <li class="path-step">
         <span class="path-number">${String(index + 1).padStart(2, '0')}</span>
@@ -381,6 +385,12 @@
             </div>
           </div>
           <p class="architecture-note"><strong>Key idea:</strong> the load balancer distributes traffic; the cache reduces repeated database reads. They solve different problems and are optional design choices, not required parts of every Azure app.</p>
+          <p class="architecture-exam-note"><strong>Exam distinction:</strong> Azure Load Balancer handles TCP/UDP at Layer 4. Application Gateway handles web traffic at Layer 7 and can provide a web application firewall.</p>
+          <details class="architecture-scenario">
+            <summary>Scenario: a product page slows down during a traffic spike. What helps?</summary>
+            <p>The load balancer spreads incoming requests across healthy app instances so one server is not doing all the work.</p>
+            <p>The app can check its cache for frequently requested product details first. If the item is not cached, it reads the database and can refresh the cache for the next request.</p>
+          </details>
         </div>
       </section>`;
   }
