@@ -2,5 +2,11 @@ __pycache__/
 *.pyc
 .venv/
 .pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 *.db
+*.db-wal
+*.db-shm
 .env
+e2e/node_modules/

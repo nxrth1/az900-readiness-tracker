@@ -1,7 +1,16 @@
 import json
 from collections import Counter
 
-from app.questions import DATA_FILE, DOMAIN_WEIGHTS, DOMAINS, REVIEW_FILE, TOPIC_DOMAIN, load_bank, validate, validate_review_metadata
+from app.questions import (
+    DATA_FILE,
+    DOMAIN_WEIGHTS,
+    DOMAINS,
+    REVIEW_FILE,
+    TOPIC_DOMAIN,
+    load_bank,
+    validate,
+    validate_review_metadata,
+)
 
 
 def test_bank_is_valid():

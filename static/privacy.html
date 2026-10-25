@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy - AZ-900 Readiness Tracker (unofficial)</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="stylesheet" href="/static/styles.css?v=9">
+  <style>
+    .doc { max-width: 720px; margin: 0 auto; padding: 24px 18px 56px; line-height: 1.6; }
+    .doc h1 { margin: 8px 0 4px; }
+    .doc h2 { margin: 28px 0 6px; font-size: 1.15rem; }
+    .doc ul { padding-left: 1.2em; }
+    .doc code { background: rgba(37, 99, 235, .08); padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <main class="doc" id="main">
+    <p><a href="/">&larr; Back to the tracker</a></p>
+    <h1>Privacy</h1>
+    <p class="muted">A plain-language description of what this app does with data, exactly as it is built. There are no accounts, and the app never asks for your name or email address.</p>
+
+    <h2>What is stored on the server</h2>
+    <ul>
+      <li><strong>A random learner id.</strong> Your browser makes it the first time you visit. It is the only thing that links you to your history, so treat it like a password. It is not derived from you.</li>
+      <li><strong>Your practice answers:</strong> which question, which option you picked, whether you marked it &ldquo;sure&rdquo; or &ldquo;guessing&rdquo;, the practice mode, how many seconds you took, and when.</li>
+      <li><strong>Results you choose to report</strong> (an official exam result or a Microsoft practice-assessment score), with the date you give and the readiness estimate the app had at that time.</li>
+      <li><strong>A cache of AI explanations</strong> keyed by question, never by person.</li>
+    </ul>
+
+    <h2>What is stored in your browser</h2>
+    <p>Your learner id, questions you saved, your study-plan settings and ticked blocks, and any practice session in progress. This uses the browser&rsquo;s local storage on this device. The app sets no cookies.</p>
+
+    <h2>What the app does not do</h2>
+    <ul>
+      <li>No advertising, no third-party analytics or tracking scripts, no selling or sharing of your data.</li>
+      <li>The server&rsquo;s own logs record a request id, the method, the page path, the status and how long it took. They do not record query strings (which is where your learner id travels) or your answers.</li>
+      <li>Your address is held in memory for a few minutes to apply rate limits and is not stored. The company hosting this site may keep its own network logs, including IP addresses.</li>
+    </ul>
+
+    <h2>AI explanations (optional)</h2>
+    <p>If the operator has switched them on, pressing &ldquo;Explain it simply&rdquo; sends that question&rsquo;s text, its answer options, the option you picked and the curated explanation to Anthropic&rsquo;s API so it can write a plainer version. Your learner id and anything else about you are not sent.</p>
+
+    <h2>How reported results are used</h2>
+    <p>Reported exam results and practice-assessment scores are used in aggregate to check how closely the readiness estimate matches real outcomes. Individual results are not published.</p>
+
+    <h2>Your choices</h2>
+    <ul>
+      <li><strong>Take it with you:</strong> &ldquo;Export my data&rdquo; on the dashboard downloads your history as a file you can import on another browser.</li>
+      <li><strong>Delete it:</strong> &ldquo;Reset my data&rdquo; permanently deletes your answers and reported results from the server.</li>
+      <li>Clearing your browser&rsquo;s site data removes your learner id from this device. Export first if you want to keep your history, because without the id nobody can reach it again.</li>
+    </ul>
+
+    <h2>How long data is kept</h2>
+    <p>Until you reset it or the operator removes it. Some free hosting plans erase the database whenever the service restarts or redeploys, so your history is not guaranteed to last; export a backup if it matters to you.</p>
+
+    <h2>Questions</h2>
+    <p>Contact: {{CONTACT}}</p>
+    <p class="muted">This is an unofficial study tool, not affiliated with or endorsed by Microsoft.</p>
+  </main>
+</body>
+</html>

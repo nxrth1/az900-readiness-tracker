@@ -1,13 +1,64 @@
-name: tests
+name: ci
 on: [push, pull_request]
+
+permissions:
+  contents: read
+
 jobs:
-  pytest:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: python -m app.questions
+      - run: python -m pytest --cov=app --cov-fail-under=90
+
+  e2e:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install -r requirements-dev.txt
-      - run: python -m app.questions
-      - run: python -m pytest -q
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: pip install -r requirements.txt
+      - run: npm ci
+        working-directory: e2e
+      - name: Real frontend (jsdom) against a live server, with axe-core accessibility checks
+        run: |
+          export DB_PATH=$RUNNER_TEMP/e2e.db RATE_LIMIT_PER_MIN=0 HEAVY_RATE_LIMIT_PER_MIN=0
+          export FEEDBACK_URL=https://github.com/example/repo/issues/new
+          uvicorn app.main:app --port 8000 --no-access-log &
+          for i in $(seq 1 20); do curl -fs localhost:8000/api/ready && break || sleep 1; done
+          BASE_URL=http://127.0.0.1:8000 npm test
+        working-directory: e2e
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t az900-readiness .
+      - name: Smoke test the image (non-root, readiness, security headers, persistence path)
+        run: |
+          docker run -d --name app -p 8000:8000 -v az900data:/data az900-readiness
+          for i in $(seq 1 20); do curl -fs localhost:8000/api/ready && break || sleep 1; done
+          curl -fsI localhost:8000/ | grep -i "content-security-policy"
+          test "$(docker exec app id -u)" != "0"
+          docker exec app python -m app.db version
+          docker logs app 2>&1 | tail -5

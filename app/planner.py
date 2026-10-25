@@ -62,7 +62,6 @@ def build_plan(report: dict, today: date, exam: date, hours_per_week: float, stu
     names = {t["id"]: t["name"] for t in report["topics"]}
     scores = {t["id"]: t["score"] for t in report["topics"]}
     needs = _needs(report)
-    order = sorted(needs, key=lambda t: needs[t], reverse=True)
     mis = [m["topic"] for m in report.get("misconceptions", [])]
 
     # --- reserve special days -------------------------------------------------------------

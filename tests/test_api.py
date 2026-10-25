@@ -1,7 +1,7 @@
 from app.explain import SYSTEM_PROMPT, build_user_prompt
 from app.questions import load_bank
 
-L = "learner-test-01"
+L = "learner-test-0001"
 
 
 def test_health_and_meta(client):
@@ -71,7 +71,7 @@ def test_validation(client):
 def test_learners_are_isolated_and_reset_works(client):
     q = next(iter(load_bank().values()))
     client.post("/api/answer", json={"learner": L, "question_id": q.id, "choice": q.answer})
-    assert client.get("/api/readiness", params={"learner": "someone-else-1"}).json()["overall"]["answered"] == 0
+    assert client.get("/api/readiness", params={"learner": "someone-else-000001"}).json()["overall"]["answered"] == 0
     assert client.delete(f"/api/learner/{L}").json()["deleted"] == 1
     assert client.get("/api/readiness", params={"learner": L}).json()["overall"]["answered"] == 0
 
@@ -86,7 +86,7 @@ def test_export_import_round_trip_and_reject_unknown_question(client):
     assert exported["format"] == "az900-readiness-tracker"
     assert len(exported["attempts"]) == 1
 
-    other = "learner-test-02"
+    other = "learner-test-0002"
     assert client.post(f"/api/learner/{other}/import", json=exported).json()["imported"] == 1
     assert client.get("/api/readiness", params={"learner": other}).json()["overall"]["answered"] == 1
     assert client.post(f"/api/learner/{other}/import", json={

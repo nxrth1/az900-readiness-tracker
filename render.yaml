@@ -5,4 +5,17 @@ services:
     plan: free
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    healthCheckPath: /api/meta
+    healthCheckPath: /api/ready
+    envVars:
+      - key: TRUSTED_PROXY_HOPS   # Render terminates TLS in one proxy that appends the real client IP
+        value: "1"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ANTHROPIC_API_KEY    # optional: enables AI explanations; set it in the dashboard
+        sync: false
+    # Free instances have an ephemeral filesystem: history resets on redeploy/spin-down. For durable
+    # data use a paid plan and uncomment (DB_PATH already points at /data inside the image):
+    # disk:
+    #   name: data
+    #   mountPath: /data
+    #   sizeGB: 1

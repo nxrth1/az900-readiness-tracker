@@ -1,0 +1,80 @@
+{
+  "_note": "URLs were taken from the official Microsoft Learn learning-path pages (canonical en-us links) on 2026-10-25. Re-check them whenever the skills outline changes.",
+  "verified_on": "2026-10-25",
+  "skills_measured_as_of": "2026-07-20",
+  "study_guide": "https://learn.microsoft.com/en-us/credentials/certifications/resources/study-guides/az-900",
+  "practice_assessment": "https://learn.microsoft.com/en-us/credentials/certifications/exams/az-900/practice/assessment?assessment-type=practice&assessmentId=23",
+  "exam_page": "https://learn.microsoft.com/en-us/credentials/certifications/exams/az-900",
+  "paths": {
+    "cloud-concepts": {
+      "title": "Describe cloud concepts",
+      "url": "https://learn.microsoft.com/en-us/training/paths/microsoft-azure-fundamentals-describe-cloud-concepts/"
+    },
+    "architecture-services": {
+      "title": "Describe Azure architecture and services",
+      "url": "https://learn.microsoft.com/en-us/training/paths/azure-fundamentals-describe-azure-architecture-services/"
+    },
+    "management-governance": {
+      "title": "Describe Azure management and governance",
+      "url": "https://learn.microsoft.com/en-us/training/paths/describe-azure-management-governance/"
+    }
+  },
+  "topics": {
+    "benefits": {
+      "title": "Describe the benefits of using cloud services",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-benefits-use-cloud-services/"
+    },
+    "economics": {
+      "title": "Describe cloud computing (consumption-based model and pricing)",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-cloud-compute/"
+    },
+    "service-types": {
+      "title": "Describe cloud service types",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-cloud-service-types/"
+    },
+    "shared-responsibility": {
+      "title": "Describe cloud computing (shared responsibility)",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-cloud-compute/"
+    },
+    "cloud-models": {
+      "title": "Describe cloud computing (cloud models)",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-cloud-compute/"
+    },
+    "core-architecture": {
+      "title": "Describe the core architectural components of Azure",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-core-architectural-components-of-azure/"
+    },
+    "compute": {
+      "title": "Describe Azure compute services",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-azure-compute-networking-services/"
+    },
+    "networking": {
+      "title": "Describe Azure networking services",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-azure-networking-services/"
+    },
+    "storage": {
+      "title": "Describe Azure storage services",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-azure-storage-services/"
+    },
+    "identity-security": {
+      "title": "Describe Azure identity, access, and security",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-azure-identity-access-security/"
+    },
+    "cost-management": {
+      "title": "Describe cost management in Azure",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-cost-management-azure/"
+    },
+    "governance": {
+      "title": "Describe features and tools in Azure for governance and compliance",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-features-tools-azure-for-governance-compliance/"
+    },
+    "management-tools": {
+      "title": "Describe features and tools for managing and deploying Azure resources",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-features-tools-manage-deploy-azure-resources/"
+    },
+    "monitoring": {
+      "title": "Describe monitoring tools in Azure",
+      "url": "https://learn.microsoft.com/en-us/training/modules/describe-monitoring-tools-azure/"
+    }
+  }
+}

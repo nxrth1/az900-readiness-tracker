@@ -1,0 +1,8 @@
+{
+  "name": "az900-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Runs the real frontend (jsdom) against a live server and checks accessibility with axe-core.",
+  "scripts": { "test": "node smoke.mjs" },
+  "devDependencies": { "axe-core": "^4.10.0", "jsdom": "^25.0.0" }
+}

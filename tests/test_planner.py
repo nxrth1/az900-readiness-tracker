@@ -129,11 +129,11 @@ def test_study_days_all_after_exam_is_an_error():
 
 
 def test_api_plan_endpoint(client):
-    client.post("/api/demo/seed", params={"learner": "learner-plan-1"})
+    client.post("/api/demo/seed", params={"learner": "learner-plan-0001"})
     exam = (date.today() + timedelta(days=21)).isoformat()
-    r = client.get("/api/plan", params={"learner": "learner-plan-1", "exam_date": exam, "hours_per_week": 6})
+    r = client.get("/api/plan", params={"learner": "learner-plan-0001", "exam_date": exam, "hours_per_week": 6})
     assert r.status_code == 200
     body = r.json()
     assert body["days"] and body["focus"] and body["days_to_exam"] == 21
-    assert client.get("/api/plan", params={"learner": "learner-plan-1", "exam_date": "2020-01-01"}).status_code == 422
-    assert client.get("/api/plan", params={"learner": "learner-plan-1", "exam_date": exam, "days": "a,b"}).status_code == 422
+    assert client.get("/api/plan", params={"learner": "learner-plan-0001", "exam_date": "2020-01-01"}).status_code == 422
+    assert client.get("/api/plan", params={"learner": "learner-plan-0001", "exam_date": exam, "days": "a,b"}).status_code == 422

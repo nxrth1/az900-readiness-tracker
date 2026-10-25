@@ -1,7 +1,5 @@
 import math
 
-import pytest
-
 from app.questions import TOPIC_WEIGHTS
 from app.scoring import HALF_LIFE_DAYS, Attempt, history, readiness, topic_posteriors
 

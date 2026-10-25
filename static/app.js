@@ -80,16 +80,48 @@
     } catch (_) { return null; }
   };
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const newId = () => (window.crypto && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now()}${Math.random().toString(36).slice(2)}`).replace(/[^A-Za-z0-9_-]/g, '');
+
+  // Every request has a timeout so the UI can never hang; safe (GET) requests retry once on a
+  // dropped connection or a temporary 502/503/504. Writes are never blindly retried here: answers
+  // carry an attempt_id so the server can de-duplicate when the *user* retries.
   async function api(path, opts = {}) {
-    let res;
-    try { res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...opts }); }
-    catch (error) { throw new Error(`Could not connect to the server. Check your connection and retry. (${error.message})`); }
-    if (!res.ok) {
-      let msg = `Request failed (${res.status})`;
-      try { const j = await res.json(); if (j.detail) msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail); } catch (_) { /* ignore */ }
-      throw new Error(msg);
+    const { timeout = 15000, ...init } = opts;
+    const retries = (init.method || 'GET').toUpperCase() === 'GET' ? 1 : 0;
+    for (let attempt = 0; ; attempt += 1) {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), timeout);
+      let res;
+      try {
+        res = await fetch(path, { headers: { 'Content-Type': 'application/json' }, ...init, signal: ctl.signal });
+      } catch (error) {
+        if (attempt < retries) { await sleep(400); continue; }
+        throw new Error(error.name === 'AbortError'
+          ? 'The server took too long to respond. Please try again.'
+          : `Could not connect to the server. Check your connection and retry. (${error.message})`);
+      } finally { clearTimeout(timer); }
+      if (!res.ok) {
+        if (attempt < retries && [502, 503, 504].includes(res.status)) { await sleep(600); continue; }
+        let msg = `Request failed (${res.status})`;
+        try {
+          const j = await res.json();
+          if (Array.isArray(j.detail)) {
+            msg = j.detail.map((d) => String(d.msg || '').replace(/^Value error, /, '')).filter(Boolean).join('. ') || msg;
+          } else if (j.detail) { msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail); }
+        } catch (_) { /* ignore */ }
+        if (res.status === 429) {
+          const wait = Number(res.headers.get('Retry-After'));
+          msg = `You are going a little fast. Try again in ${Number.isFinite(wait) && wait > 0 ? `${wait} seconds` : 'a moment'}.`;
+        } else if (res.status === 503) {
+          msg = 'The server is busy right now. Please try again in a moment.';
+        }
+        throw new Error(msg);
+      }
+      return res.json();
     }
-    return res.json();
   }
 
   function toast(msg) {
@@ -106,7 +138,7 @@
       return plan && Array.isArray(plan.days) && typeof plan.exam === 'string' ? plan : null;
     } catch (_) { return null; }
   };
-  const S = { view: 'dashboard', meta: null, report: null, quiz: null, interrupted: loadSession(), lang: 'en', loading: false, plan: null, previousPlan: loadPlanSnapshot(), planError: null, planNotice: null, planPrefs: null, timer: null, lastTimerAnnouncement: null };
+  const S = { view: 'dashboard', meta: null, report: null, quiz: null, interrupted: loadSession(), lang: 'en', loading: false, plan: null, previousPlan: loadPlanSnapshot(), planError: null, planNotice: null, planPrefs: null, timer: null, lastTimerAnnouncement: null, outcomes: [], outcomeKind: 'exam' };
 
   function saveSession() {
     if (!S.quiz) return;
@@ -214,6 +246,88 @@
     if (p < 0.01) return 'under 1%';
     if (p > 0.99) return 'over 99%';
     return `about ${Math.round(p * 100)}%`;
+  }
+
+  // ---------- trust: study links, problem reports, content status ----------
+  const feedbackLink = (item) => {
+    const base = S.meta && S.meta.feedback_url;
+    if (!base) return '';
+    try {
+      const u = new URL(base);
+      u.searchParams.set('title', `Question ${item.id}: `);
+      u.searchParams.set('body', `Question id: ${item.id}\n\nWhat is wrong or unclear?\n`);
+      return `<a href="${esc(u.toString())}" target="_blank" rel="noopener noreferrer">Report a problem with this question</a>`;
+    } catch (_) { return ''; }
+  };
+
+  const resourceLinks = (item, result) => {
+    const learn = result && result.learn;
+    const study = learn && learn.url
+      ? `<a href="${esc(learn.url)}" target="_blank" rel="noopener noreferrer">Study this on Microsoft Learn: ${esc(learn.title)}</a>` : '';
+    const report = feedbackLink(item);
+    return study || report ? `<p class="resource">${study}${report}</p>` : '';
+  };
+
+  function contentNote() {
+    const c = S.meta && S.meta.content;
+    if (!c) return '';
+    const asOf = new Date(`${c.skills_measured_as_of}T00:00:00Z`)
+      .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+    const reviewed = c.reviewed === 0
+      ? 'These questions have not yet been independently reviewed, so check anything surprising against the official guide.'
+      : `${c.reviewed} of ${c.questions} questions have been checked by a person against the guide.`;
+    return `<p class="content-note">Questions follow Microsoft's <a href="${esc(c.study_guide_url)}" target="_blank" rel="noopener noreferrer">AZ-900 study guide</a> (skills measured as of ${asOf}). ${reviewed} For an official check, try Microsoft's free <a href="${esc(c.practice_assessment_url)}" target="_blank" rel="noopener noreferrer">practice assessment</a>.</p>`;
+  }
+
+  // ---------- reporting real results (powers the accuracy check) ----------
+  async function loadOutcomes() {
+    try { S.outcomes = (await api(`/api/outcomes?learner=${learner}`)).outcomes; } catch (_) { S.outcomes = []; }
+  }
+
+  function outcomeCard() {
+    const kind = S.outcomeKind; const today = isoToday();
+    const past = (S.outcomes || []).slice(0, 4).map((o) => {
+      const what = o.kind === 'exam'
+        ? `Official exam: ${o.passed ? 'passed' : 'not passed'}${o.score ? ` (${Math.round(o.score)})` : ''}`
+        : `Practice assessment: ${Math.round(o.score)}%`;
+      const est = o.answered > 0 ? `, our estimate then: ${pct(o.est_score)}` : '';
+      return `<li>${esc(o.happened_on)} &middot; ${what}${est}</li>`;
+    }).join('');
+    return `
+      <section class="card" style="margin-top:16px" aria-labelledby="h-outcome">
+        <h2 id="h-outcome">How did the real thing go?</h2>
+        <p class="muted" style="margin:0">Took the official exam, or Microsoft's free practice assessment? Tell us the result. It stays private and is only used, in aggregate, to check how accurate this tracker is.</p>
+        <div class="seg" role="group" aria-label="Type of result" style="margin-top:10px">
+          <button data-act="outcome-kind" data-v="exam" aria-pressed="${kind === 'exam'}">Official exam</button>
+          <button data-act="outcome-kind" data-v="practice_assessment" aria-pressed="${kind === 'practice_assessment'}">Practice assessment</button>
+        </div>
+        <div class="outcome-form">
+          <label>Date<input id="oc-date" type="date" value="${today}" max="${today}"></label>
+          ${kind === 'exam'
+    ? `<label>Result<select id="oc-passed"><option value="true">Passed</option><option value="false">Did not pass</option></select></label>
+          <label>Scaled score (optional, 100 to 1000)<input id="oc-score" type="number" min="100" max="1000" inputmode="numeric"></label>`
+    : '<label>Score (percent)<input id="oc-score" type="number" min="0" max="100" step="1" inputmode="decimal"></label>'}
+          <div><button class="btn" data-act="outcome-submit">Send result</button></div>
+        </div>
+        ${past ? `<ul class="outcome-list" aria-label="Results you reported">${past}</ul>` : ''}
+      </section>`;
+  }
+
+  async function submitOutcome() {
+    const kind = S.outcomeKind;
+    const raw = $('#oc-score').value;
+    const body = { learner, kind, happened_on: $('#oc-date').value };
+    if (kind === 'exam') {
+      body.passed = $('#oc-passed').value === 'true';
+      if (raw !== '') body.score = Number(raw);
+    } else {
+      if (raw === '') { toast('Enter your score as a percentage.'); return; }
+      body.score = Number(raw);
+    }
+    await api('/api/outcome', { method: 'POST', body: JSON.stringify(body) });
+    toast('Thank you. Your result is saved.');
+    await loadOutcomes();
+    render();
   }
 
   function interruptedSessionCard() {
@@ -450,7 +564,8 @@
           <article><span class="feature-icon">${icon('chart')}</span><div><h2>Track your readiness</h2><p>See your progress by exam domain and topic.</p></div></article>
           <article><span class="feature-icon">${icon('target')}</span><div><h2>Focus your practice</h2><p>Spend time on the subjects that need it.</p></div></article>
           <article><span class="feature-icon">${icon('calendar')}</span><div><h2>Plan your study</h2><p>Turn your exam date into a realistic schedule.</p></div></article>
-        </section>`;
+        </section>
+        ${contentNote()}`;
     }
     const reliable = r.topics.filter((t) => t.coverage >= 1).length;
     const lead = o.status === 'start'
@@ -496,6 +611,7 @@
       </div>
 
       ${learningInsights(r.insights)}
+      ${outcomeCard()}
       <section class="card tmap" style="margin-top:16px" aria-labelledby="h-map"><h2 id="h-map">Topic map</h2>${topicMap(r)}</section>
 
       <div class="row" style="margin-top:10px">
@@ -504,7 +620,8 @@
         <button class="btn quiet" data-act="import">Import backup</button>
         <input id="import-file" type="file" accept="application/json,.json" hidden>
         <button class="btn quiet" data-act="reset">Reset my data</button>
-      </div>`;
+      </div>
+      ${contentNote()}`;
   }
 
   // ---------- practice setup ----------
@@ -596,6 +713,7 @@
           <h3 id="feedback-title" tabindex="-1">${done.correct ? 'Correct' : 'Not quite'}</h3>
           ${done.correct ? '' : `<p>${esc(done.why_not)}</p>`}
           <p>${esc(done.explanation)}</p>
+          ${resourceLinks(item, done)}
           ${S.meta.ai ? `
           <div class="row">
             <button class="btn" data-act="explain">Explain it simply</button>
@@ -683,14 +801,20 @@
     }
     Q.busy = true;
     const orig = item.order[Q.picked];
+    // One id per presentation of a question: if the request fails and the learner presses again, the
+    // server recognises the retry and never records the answer twice.
+    const sig = `${orig}:${Q.sure}`;  // a changed answer is a different attempt
+    if (!Q.attemptId || Q.attemptSig !== sig) { Q.attemptId = newId(); Q.attemptSig = sig; }
     try {
       const res = await api('/api/answer', {
         method: 'POST',
         body: JSON.stringify({
           learner, question_id: item.id, choice: orig, confidence: Q.sure ? 'sure' : 'guess',
           mode: Q.mode === 'retry' ? 'adaptive' : Q.mode, seconds: Math.round((Date.now() - Q.t0) / 100) / 10,
+          attempt_id: Q.attemptId,
         }),
       });
+      Q.attemptId = null; Q.attemptSig = null;
       Q.results.push({ item, chosen: orig, sure: Q.sure, ...res });
       Q.answered = res;
       Q.error = null;
@@ -817,6 +941,7 @@
             <div class="a">You chose: ${esc(x.item.options[x.chosen])}${x.sure ? ' (you were sure)' : ''}</div>
             <div class="a">Correct: <strong style="color:var(--ink)">${esc(x.item.options[x.correct_index])}</strong></div>
             <p style="margin:6px 0 0">${esc(x.why_not)} ${esc(x.explanation)}</p>
+            ${resourceLinks(x.item, x)}
             <button class="btn quiet" data-act="toggle-save" data-question="${esc(x.item.id)}">${savedIds().includes(x.item.id) ? 'Saved for later' : 'Save question for later'}</button>
           </div>`).join('') : '<p class="muted">Every answer was right. Your dashboard has the next best topic to stretch.</p>'}
       </section>
@@ -1022,6 +1147,7 @@
 
   async function loadReport() {
     S.report = await api(`/api/readiness?learner=${learner}`);
+    if (S.report.overall.answered > 0) await loadOutcomes(); else S.outcomes = [];
   }
 
   async function go(view) {
@@ -1144,7 +1270,7 @@
     const last = Q.results[Q.results.length - 1];
     out.innerHTML = '<div class="ai"><small>Thinking&hellip;</small></div>';
     try {
-      const r = await api('/api/explain', { method: 'POST', body: JSON.stringify({ question_id: last.item.id, choice: last.chosen, language: S.lang, style: last.correct ? 'exam-tip' : 'simple' }) });
+      const r = await api('/api/explain', { method: 'POST', timeout: 30000, body: JSON.stringify({ question_id: last.item.id, choice: last.chosen, language: S.lang, style: last.correct ? 'exam-tip' : 'simple' }) });
       const label = r.source === 'builtin' ? 'Claude could not be reached, so this is the built-in explanation' : 'Explanation by Claude';
       out.innerHTML = `<div class="ai"><small>${label}</small>${esc(r.text)}</div>`;
     } catch (e) { out.innerHTML = `<div class="ai">${esc(e.message)}</div>`; }
@@ -1241,9 +1367,14 @@
         case 'lang': S.lang = el.dataset.v; { const keep = $('#ai-out') ? $('#ai-out').innerHTML : ''; render(); if ($('#ai-out')) $('#ai-out').innerHTML = keep; } break;
         case 'quit': if (window.confirm('Quit this session? Answers you already gave are saved.')) { await go('dashboard'); } break;
         case 'go-dashboard': await go('dashboard'); break;
+        case 'outcome-kind':
+          S.outcomeKind = el.dataset.v; render();
+          $('[data-act="outcome-kind"][aria-pressed="true"]')?.focus();
+          break;
+        case 'outcome-submit': await submitOutcome(); break;
         case 'demo':
           if (!S.report || S.report.overall.answered === 0 || window.confirm('Replace your current history with demo data?')) {
-            await api(`/api/demo/seed?learner=${learner}`, { method: 'POST' });
+            await api(`/api/demo/seed?learner=${learner}&replace=true`, { method: 'POST' });
             clearSavedSession();
             toast('Demo data loaded'); await go('dashboard');
           }

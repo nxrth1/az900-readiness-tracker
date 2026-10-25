@@ -25,7 +25,7 @@ from __future__ import annotations
 import math
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 
 from .questions import DOMAIN_WEIGHTS, DOMAINS, TOPIC_DOMAIN, TOPIC_NAMES, TOPIC_WEIGHTS
 
@@ -123,7 +123,7 @@ def _status(p_pass: float, coverage: float, weakest_domain: float) -> tuple[str,
 
 def readiness(attempts: list[Attempt], now: float | None = None) -> dict:
     """Full readiness report for one learner as of ``now`` (defaults to the current time)."""
-    now = datetime.now(timezone.utc).timestamp() if now is None else now
+    now = datetime.now(UTC).timestamp() if now is None else now
     topics = topic_posteriors(attempts, now)
 
     domains = []
@@ -197,7 +197,7 @@ def readiness(attempts: list[Attempt], now: float | None = None) -> dict:
 
 def history(attempts: list[Attempt], now: float | None = None, days: int = 14, tz_offset_hours: float = 3.0) -> list[dict]:
     """Estimated exam score at the end of each day that has any evidence (oldest first)."""
-    now = datetime.now(timezone.utc).timestamp() if now is None else now
+    now = datetime.now(UTC).timestamp() if now is None else now
     if not attempts:
         return []
     tz = timezone(timedelta(hours=tz_offset_hours))
