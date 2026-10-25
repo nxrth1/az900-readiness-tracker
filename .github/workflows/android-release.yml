@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       AZ900_BACKEND_URL: ${{ github.event.inputs.backend_url || 'https://az900-readiness-tracker.onrender.com' }}
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -35,9 +37,11 @@ jobs:
 
       - name: Accept Android SDK licenses and install build packages
         run: |
+          set +e
           set +o pipefail
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
           license_status=${PIPESTATUS[1]}
+          set -e
           set -o pipefail
           if [ "$license_status" -ne 0 ]; then
             echo "::error::Android SDK license acceptance failed"
