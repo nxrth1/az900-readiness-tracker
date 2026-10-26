@@ -41,7 +41,7 @@ jobs:
         working-directory: e2e
       - name: Real frontend (jsdom) against a live server, with axe-core accessibility checks
         run: |
-          export DB_PATH=$RUNNER_TEMP/e2e.db RATE_LIMIT_PER_MIN=0 HEAVY_RATE_LIMIT_PER_MIN=0
+          export PYTHONPATH=.. DB_PATH=$RUNNER_TEMP/e2e.db RATE_LIMIT_PER_MIN=0 HEAVY_RATE_LIMIT_PER_MIN=0
           export FEEDBACK_URL=https://github.com/example/repo/issues/new
           uvicorn app.main:app --port 8000 --no-access-log &
           for i in $(seq 1 20); do curl -fs localhost:8000/api/ready && break || sleep 1; done
